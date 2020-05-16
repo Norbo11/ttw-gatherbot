@@ -1,2 +1,3 @@
-if (message.content === '!add' {
+if (message.content === '!add') {
 	message.channel.send('Added: ${member}')
+}
