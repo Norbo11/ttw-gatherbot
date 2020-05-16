@@ -1,5 +1,5 @@
-module.exports = (client, message) => {
+client.on('message', message => {
 if (message.content === '!add') {
-	message.send('Added: ${member} | x | x | x | x | x ')
+	message.channel.send('get a life loser!');
 }}
 
