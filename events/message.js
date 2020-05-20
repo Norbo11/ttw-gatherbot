@@ -23,7 +23,7 @@ if (message.content === 'q!cap 4') {
 if (message.content === 'q!cap 6') {
       //  message.channel.send('q!cap 4')
         var net = require('net');
-        var     client = net.connect(23075,'localhost',function() {
+        var     client = net.connect(23075,'51.68.137.225',function() {
                 client.write("ttwadmin\n");
                 client.write('/gathersize 6\n');
                 client.write('/restart\n');
@@ -34,7 +34,7 @@ if (message.content === 'q!cap 6') {
 if (message.content === 'q!cap 8') {
       //  message.channel.send('q!cap 4')
         var net = require('net');
-        var     client = net.connect(23075,'localhost',function() {
+        var     client = net.connect(23075,'51.68.137.225',function() {
                 client.write("ttwadmin\n");
                 client.write('/gathersize 8\n');
                 client.write('/restart\n');
@@ -45,7 +45,7 @@ if (message.content === 'q!cap 8') {
 if (message.content === 'q!cap 10') {
       //  message.channel.send('q!cap 4')
         var net = require('net');
-        var     client = net.connect(23075,'localhost',function() {
+        var     client = net.connect(23075,'51.68.137.225',function() {
                 client.write("ttwadmin\n");
                 client.write('/gathersize 10\n');
                 client.write('/restart\n');
