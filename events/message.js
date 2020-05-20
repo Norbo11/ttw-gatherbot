@@ -13,10 +13,10 @@ if (message.content === 'q!cap 4') {
 	var net = require('net');
 	var	client = net.connect(23075,'51.68.137.225',function() {
 		client.write("ttwadmin\n");
-		client.write('/gathersize 4\n');
-		client.write('/restart\n');
-		client.end('/say Gather size set to 4\n');
-		message.channel.send('Server size set to 4!');
+		client.write("/gathersize 4\n");
+		client.write("/restart\n");
+		client.end("/say Gather size set to 4\n");
+		message.channel.send("Server size set to 4!");
 })}
 
 
