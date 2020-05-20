@@ -11,7 +11,7 @@ if (message.content === '!server') {
 if (message.content === 'q!cap 4') {
       //  message.channel.send('q!cap 4')
 	var net = require('net');
-	var	client = net.connect(23075,'localhost',function() {
+	var	client = net.connect(23075,'51.68.137.225',function() {
 		client.write("ttwadmin\n");
 		client.write('/gathersize 4\n');
 		client.write('/restart\n');
