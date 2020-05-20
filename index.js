@@ -1,11 +1,7 @@
 require("dotenv").config()
 const Discord = require("discord.js")
 const fs = require("fs")
-const newclient = new Discord.Client()
-const net = require("net")
-const client = net.connect(PORT,HOST,function()
-var HOST = 'localhost';
-var PORT = 23075;
+const client = new Discord.Client()
 
 fs.readdir("./events/", (err, files) => { 
 	files.forEach(file => {
