@@ -1,42 +1,35 @@
-const net = require('net');
+const soldat = require('../state/soldat')
+
 
 module.exports = {
-    name: 'map',
+    aliases: ['map'],
     description: 'View or change the current map.',
-    execute(message, args) {
-        const serconstgs = message.content.slice(1,).split('%');
+    execute(client, message, args) {
+        soldat.soldatClient.write(`/map ${args[0]}\n`);
 
-        const client = net.connect(23075, '51.68.137.225', function () {
-            client.write('ttwadmin\n');
-            client.write(`/${serconstgs}\n`);
+        const listener = (data) => {
+            const read = data.toString();
 
-            client.on('data', function (data) {
-                    const read = data.toString();
-                    const completeData = '';
-                    if (read.match(/Map not found/)) {
-                        message.channel.send({
-                            embed: {
-                                color: 3447003,
-                                description: "Map not found!",
-                            }
-                        });
+            if (read.match(/Map not found/)) {
+                message.channel.send({
+                    embed: {
+                        color: 3447003,
+                        description: "Map not found!",
                     }
+                });
+            }
 
-                    if (read.match(/Initializing bunkers/)) {
-                        const args = message.content.slice(5,).split(' ');
-                        message.channel.send({
-                            embed: {
-                                color: 3447003,
-                                description: `Map changed to: **${args}**`,
-                            }
-                        });
+            if (read.match(/Initializing bunkers/)) {
+                const args = message.content.slice(5,).split(' ');
+                message.channel.send({
+                    embed: {
+                        color: 3447003,
+                        description: `Map changed to: **${args}**`,
                     }
+                });
+            }
+        }
 
-                    setTimeout(function () {
-                        client.end();
-                    }, 7000);
-                }
-            );
-        })
+        soldat.soldatClient.on('data', listener);
     },
 };

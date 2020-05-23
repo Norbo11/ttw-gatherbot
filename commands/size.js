@@ -1,10 +1,10 @@
 const state = require("../state/state.js")
-const net = require('net');
+const soldat = require("../state/soldat")
 
 module.exports = {
-    name: 'size',
+    aliases: ['size'],
     description: 'Get or set the gather size.',
-    execute(message, args) {
+    execute(client, message, args) {
         if (args.length === 0) {
             message.channel.send(`The current gather size is ${state.currentSize}`)
             return
@@ -19,20 +19,17 @@ module.exports = {
             }
         });
 
-        const client = net.connect(23075, '51.68.137.225', function () {
-            client.write('ttwadmin\n');
-            client.write(`/gathersize ${newSize}\n`);
-            client.write('/restart\n');
-            client.end(`/say Gather size set to ${newSize}\m`);
+        soldat.soldatClient.write(`/gathersize ${newSize}\n`);
+        soldat.soldatClient.write('/restart\n');
+        soldat.soldatClient.write(`/say Gather size set to ${newSize}\m`);
 
-            state.currentSize = newSize
+        state.currentSize = newSize
 
-            message.channel.send({
-                embed: {
-                    color: 3447003,
-                    description: `Server size set to ${newSize}`,
-                }
-            });
-        })
+        message.channel.send({
+            embed: {
+                color: 3447003,
+                description: `Server size set to ${newSize}`,
+            }
+        });
     },
 };

@@ -1,9 +1,9 @@
 const state = require("../state/state.js")
 
 module.exports = {
-    name: 'add',
+    aliases: ['add'],
     description: 'Add yourself to the gather queue.',
-    execute(message, args) {
+    execute(client, message, args) {
         if (!state.currentQueue.includes(message.author)) {
             state.currentQueue.push(message.author)
         }

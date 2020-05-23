@@ -1,7 +1,7 @@
 module.exports = {
-    name: 'server',
+    aliases: ['server'],
     description: 'Get the IP address of the server.',
-    execute(message, args) {
+    execute(client, message, args) {
         message.channel.send({
             embed: {
                 title: "Server Info",
