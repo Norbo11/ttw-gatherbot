@@ -9,7 +9,7 @@ displayQueue = (message) => {
     for (let i = 0; i < maxQueueSize - currentQueue.length; i++) {
         queueMembers.push(':bust_in_silhouette:')
     }
-    message.channel.send(`[${queueMembers.join(", ")}] [${currentMap}]`)
+    message.channel.send(`[${queueMembers.join(" - ")}] [${currentMap}]`)
 }
 
 module.exports = (client, message) => {
