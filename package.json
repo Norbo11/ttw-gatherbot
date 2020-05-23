@@ -1,25 +1,25 @@
 {
-  "name": "ttw-gatherbot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "another-telnet-client": "^0.1.3",
-    "axios": "^0.19.2",
-    "body-parser": "^1.19.0",
-    "discord.js": "^12.2.0",
-    "dotenv": "^8.2.0",
-    "telnet-client": "^1.4.1"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.4"
-  }
+    "name": "Discord-PUG-Bot",
+    "version": "1.0.0",
+    "description": "A Discord bot for organising Pickup Games. Aimed at Rocket League and written for use on discord.gg/rlo",
+    "keywords": ["discord", "bot", "pug", "rlo"],
+    "homepage": "https://github.com/BeatnikAU/Discord-PUG-Bot/",
+    "bugs": "https://github.com/BeatnikAU/Discord-PUG-Bot/issues/",
+    "private": true,
+    "author": "BeatnikAU (https://github.com/BeatnikAU/)",
+    "contributors": ["Arcadeena <arcadeena@gmail.com> (https://github.com/arcadeena/)"],
+    "main": "src/index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BeatnikAU/Discord-PUG-Bot.git"
+    },
+    "dependencies": {
+        "discord.js": "11.0.0"
+    },
+    "engines": {
+        "node": ">=6.0.0"
+    },
+    "scripts": {
+        "start": "node src/index.js"
+    }
 }
