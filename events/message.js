@@ -1,6 +1,28 @@
-module.exports = (client, message, member, config, prefix) => {
+var _ = require("lodash")
+
+maxQueueSize = 6
+currentQueue = []
+currentMap = "ttw_test"
+
+displayQueue = (message) => {
+    const queueMembers = currentQueue.map(user => `<@${user.id}>`)
+    for (let i = 0; i < maxQueueSize - currentQueue.length; i++) {
+        queueMembers.push(':bust_in_silhouette:')
+    }
+    message.channel.send(`[${queueMembers.join(", ")}] [${currentMap}]`)
+}
+
+module.exports = (client, message) => {
     if (message.content === '!add') {
-        message.channel.send('Try q!join instead! :)')
+        if (!currentQueue.includes(message.author)) {
+            currentQueue.push(message.author)
+        }
+        displayQueue(message)
+    }
+
+    if (message.content === '!remove') {
+        _.remove(currentQueue, (x) => x === message.author)
+        displayQueue(message)
     }
 
     if (message.content === '!server') {
