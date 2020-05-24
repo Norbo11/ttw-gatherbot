@@ -1,5 +1,6 @@
 const constants = require("../constants")
 const _ = require("lodash")
+const logger = require("../utils/logger")
 
 module.exports = (client, message) => {
 
@@ -14,7 +15,7 @@ module.exports = (client, message) => {
     if (command === undefined) return;
 
     try {
-        console.log(`${message.author.username}: ${message.content}`)
+        logger.log.info(`${message.author.username}: ${message.content}`)
         command.execute(client, message, args);
     } catch (error) {
         console.error(error);

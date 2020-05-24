@@ -1,3 +1,5 @@
+const logger = require("../utils/logger")
+
 module.exports = {
     aliases: ["server"],
     description: "Get the IP address of the server.",

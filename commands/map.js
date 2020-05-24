@@ -1,4 +1,5 @@
 const soldat = require("../utils/soldat")
+const logger = require("../utils/logger")
 
 
 module.exports = {
@@ -6,8 +7,6 @@ module.exports = {
     description: "View or change the current map.",
     execute(client, message, args) {
         message.channel.send("Changing map, hang on...")
-
-        soldat.soldatClient.write(`/map ${args[0]}\n`);
 
         soldat.listenForServerResponse(text => {
             if (text.match(/Map not found/)) {
@@ -17,7 +16,6 @@ module.exports = {
                         description: "Map not found!",
                     }
                 });
-                console.log("Returning")
                 return true;
             }
 
@@ -34,5 +32,7 @@ module.exports = {
 
             return false;
         })
+
+        soldat.soldatClient.write(`/map ${args[0]}\n`);
     },
 };

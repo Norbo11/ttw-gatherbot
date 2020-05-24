@@ -1,5 +1,6 @@
-const gather = require("../utils/gather.js")
+const gather = require("../utils/gather")
 const _ = require("lodash")
+const logger = require("../utils/logger")
 
 module.exports = {
     aliases: ["del", "remove"],

@@ -1,5 +1,6 @@
 const gather = require("../utils/gather.js")
 const soldat = require("../utils/soldat")
+const logger = require("../utils/logger")
 
 module.exports = {
     aliases: ["size"],
@@ -19,10 +20,6 @@ module.exports = {
 
         message.channel.send("Changing size, hang on...")
 
-        soldat.soldatClient.write(`/gathersize ${newSize}\n`);
-        soldat.soldatClient.write("/restart\n");
-        soldat.soldatClient.write(`/say Gather size set to ${newSize}\n`);
-
         soldat.listenForServerResponse(text => {
             if (text.match(/Initializing bunkers/)) {
                 gather.gatherState.currentSize = newSize
@@ -32,5 +29,9 @@ module.exports = {
             }
             return false;
         })
+
+        soldat.soldatClient.write(`/gathersize ${newSize}\n`);
+        soldat.soldatClient.write("/restart\n");
+        soldat.soldatClient.write(`/say Gather size set to ${newSize}\n`);
     },
 };

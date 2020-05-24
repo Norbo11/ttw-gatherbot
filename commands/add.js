@@ -1,4 +1,5 @@
 const gather = require("../utils/gather.js")
+const logger = require("../utils/logger")
 
 module.exports = {
     aliases: ["add"],
