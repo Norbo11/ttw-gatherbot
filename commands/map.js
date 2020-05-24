@@ -1,4 +1,4 @@
-const soldat = require('../state/soldat')
+const soldat = require('../utils/soldat')
 
 
 module.exports = {
@@ -17,6 +17,8 @@ module.exports = {
                         description: "Map not found!",
                     }
                 });
+
+                soldat.soldatClient.removeListener('data', listener)
             }
 
             if (read.match(/Initializing bunkers/)) {
@@ -27,9 +29,15 @@ module.exports = {
                         description: `Map changed to: **${args}**`,
                     }
                 });
+
+                soldat.soldatClient.removeListener('data', listener)
             }
         }
 
-        soldat.soldatClient.on('data', listener);
+        soldat.soldatClient.addListener('data', listener);
+
+        setTimeout(() => {
+            soldat.soldatClient.removeListener('data', listener)
+        }, 7000)
     },
 };

@@ -1,9 +1,8 @@
 require("dotenv").config()
-const soldat = require("./state/soldat")
+const soldat = require("./utils/soldat")
 
 const Discord = require("discord.js")
 const fs = require("fs")
-const config = require('./config.json')
 
 const client = new Discord.Client()
 client.commands = []
@@ -25,4 +24,16 @@ fs.readdir("./events/", (err, files) => {
 
 client.login(process.env.BOT_TOKEN)
 
-// soldat.soldatClient.end()
+
+cleanUp =  () => {
+    console.log("Closing connection to Soldat Server...")
+    soldat.soldatClient.end()
+    console.log("Connection successfully terminated.")
+    process.exit(0)
+}
+
+
+process.on("exit", cleanUp)
+process.on("SIGINT", cleanUp)
+
+

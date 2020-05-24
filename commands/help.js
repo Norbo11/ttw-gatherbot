@@ -1,5 +1,5 @@
 const constants = require("../constants")
-const state = require("../state/state.js")
+const state = require("../utils/gather.js")
 
 module.exports = {
     aliases: ['help'],

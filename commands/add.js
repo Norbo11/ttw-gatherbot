@@ -1,12 +1,17 @@
-const state = require("../state/state.js")
+const gather = require("../utils/gather.js")
 
 module.exports = {
     aliases: ['add'],
     description: 'Add yourself to the gather queue.',
     execute(client, message, args) {
-        if (!state.currentQueue.includes(message.author)) {
-            state.currentQueue.push(message.author)
+        if (!gather.gatherState.currentQueue.includes(message.author)) {
+            gather.gatherState.currentQueue.push(message.author)
         }
-        state.displayQueue(message)
+
+        if (gather.gatherState.currentQueue.length === gather.gatherState.currentSize) {
+            gather.startGame(message)
+        } else {
+            gather.displayQueue(message)
+        }
     },
 };

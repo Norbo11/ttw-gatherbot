@@ -1,35 +1,45 @@
-const state = require("../state/state.js")
-const soldat = require("../state/soldat")
+const gather = require("../utils/gather.js")
+const soldat = require("../utils/soldat")
 
 module.exports = {
     aliases: ['size'],
     description: 'Get or set the gather size.',
     execute(client, message, args) {
         if (args.length === 0) {
-            message.channel.send(`The current gather size is ${state.currentSize}`)
+            message.channel.send(`The current gather size is ${gather.gatherState.currentSize}`)
             return
         }
 
-        const newSize = args[0]
+        const newSize = parseInt(args[0])
 
-        message.channel.send({
-            embed: {
-                color: 3447003,
-                description: "[soldat://51.68.137.225:23075/goaway/](soldat://51.68.137.225:23075/goaway/)",
-            }
-        });
+        if (newSize % 2 !== 0) {
+            message.channel.send(`The gather size must be a multiple of 2.`)
+            return
+        }
+
+        message.channel.send("Changing size, hang on...")
 
         soldat.soldatClient.write(`/gathersize ${newSize}\n`);
         soldat.soldatClient.write('/restart\n');
-        soldat.soldatClient.write(`/say Gather size set to ${newSize}\m`);
+        soldat.soldatClient.write(`/say Gather size set to ${newSize}\n`);
 
-        state.currentSize = newSize
+        const listener = (data) => {
+            const read = data.toString();
 
-        message.channel.send({
-            embed: {
-                color: 3447003,
-                description: `Server size set to ${newSize}`,
+            if (read.match(/Initializing bunkers/)) {
+                gather.gatherState.currentSize = newSize
+                gather.gatherState.currentQueue = []
+                gather.displayQueue(message)
+
+                soldat.soldatClient.removeListener('data', listener)
             }
-        });
+        }
+
+        soldat.soldatClient.addListener('data', listener);
+
+        setTimeout(() => {
+            soldat.soldatClient.removeListener('data', listener)
+        }, 7000)
+
     },
 };
