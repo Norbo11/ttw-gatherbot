@@ -25,7 +25,8 @@
         "lodash": "4.17.15",
         "dotenv": "8.2.0",
         "pino": "6.2.1",
-        "pino-pretty": "4.0.0"
+        "pino-pretty": "4.0.0",
+        "binary-parser": "1.6.2"
     },
     "engines": {
         "node": ">=6.0.0"
