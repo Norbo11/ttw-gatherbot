@@ -3,7 +3,7 @@ const _ = require("lodash")
 
 module.exports = (client, message) => {
 
-    // Do not process messages that don't start with our prefix, or come from a bot
+    // Do not process messages that don"t start with our prefix, or come from a bot
     if (!message.content.startsWith(constants.PREFIX) || message.author.bot) return;
 
     const args = message.content.slice(constants.PREFIX.length).split(/ +/);
@@ -18,6 +18,6 @@ module.exports = (client, message) => {
         command.execute(client, message, args);
     } catch (error) {
         console.error(error);
-        message.reply('there was an error trying to execute that command!');
+        message.reply("there was an error trying to execute that command!");
     }
 }

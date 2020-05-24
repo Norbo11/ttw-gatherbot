@@ -1,7 +1,7 @@
 const soldat = require("../utils/soldat")
 
 
-soldat.soldatClient.on('data', function (data) {
+soldat.soldatClient.on("data", function (data) {
     const read = data.toString();
 
     if (read.match(/USER RESET, GATHER RESTART!/)) {

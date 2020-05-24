@@ -7,7 +7,26 @@ const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, fun
     console.log("Successfully connected to the Soldat server.")
 })
 
+listenForServerResponse = (processData) => {
+
+    const listener = (data) => {
+        const read = data.toString();
+        console.log(`Received from server: ${read}`)
+        if (processData(read)) {
+            console.log("Got the data that we wanted, removing listener.")
+            soldatClient.removeListener("data", listener)
+        }
+    }
+
+    soldatClient.addListener("data", listener)
+
+    setTimeout(() => {
+        console.log("7 seconds have passed, removing listener.")
+        soldatClient.removeListener("data", listener)
+    }, 7000)
+
+}
 
 module.exports = {
-    soldatClient
+    soldatClient, listenForServerResponse
 }

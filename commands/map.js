@@ -1,43 +1,38 @@
-const soldat = require('../utils/soldat')
+const soldat = require("../utils/soldat")
 
 
 module.exports = {
-    aliases: ['map'],
-    description: 'View or change the current map.',
+    aliases: ["map"],
+    description: "View or change the current map.",
     execute(client, message, args) {
+        message.channel.send("Changing map, hang on...")
+
         soldat.soldatClient.write(`/map ${args[0]}\n`);
 
-        const listener = (data) => {
-            const read = data.toString();
-
-            if (read.match(/Map not found/)) {
+        soldat.listenForServerResponse(text => {
+            if (text.match(/Map not found/)) {
                 message.channel.send({
                     embed: {
                         color: 3447003,
                         description: "Map not found!",
                     }
                 });
-
-                soldat.soldatClient.removeListener('data', listener)
+                console.log("Returning")
+                return true;
             }
 
-            if (read.match(/Initializing bunkers/)) {
-                const args = message.content.slice(5,).split(' ');
+            if (text.match(/Initializing bunkers/)) {
+                const args = message.content.slice(5,).split(" ");
                 message.channel.send({
                     embed: {
                         color: 3447003,
                         description: `Map changed to: **${args}**`,
                     }
                 });
-
-                soldat.soldatClient.removeListener('data', listener)
+                return true;
             }
-        }
 
-        soldat.soldatClient.addListener('data', listener);
-
-        setTimeout(() => {
-            soldat.soldatClient.removeListener('data', listener)
-        }, 7000)
+            return false;
+        })
     },
 };

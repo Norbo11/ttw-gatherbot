@@ -8,9 +8,8 @@ gatherState = {
 
 displayQueue = (message) => {
     const queueMembers = gatherState.currentQueue.map(user => `<@${user.id}>`)
-    console.log(`current size is ${gatherState.currentSize}`)
     for (let i = 0; i < gatherState.currentSize - gatherState.currentQueue.length; i++) {
-        queueMembers.push(':bust_in_silhouette:')
+        queueMembers.push(":bust_in_silhouette:")
     }
     message.channel.send(`[${queueMembers.join(" - ")}] [${gatherState.currentMap}]`)
 }

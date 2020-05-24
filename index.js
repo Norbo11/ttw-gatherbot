@@ -7,7 +7,7 @@ const fs = require("fs")
 const client = new Discord.Client()
 client.commands = []
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
 
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
@@ -32,8 +32,6 @@ cleanUp =  () => {
     process.exit(0)
 }
 
-
-process.on("exit", cleanUp)
 process.on("SIGINT", cleanUp)
 
 
