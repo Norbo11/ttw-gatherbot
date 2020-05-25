@@ -110,19 +110,46 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
     })
 }
 
+gatherStart = (mapName, size) => {
+    discord.discordState.discordChannel.send({
+        embed: {
+            title: "Gather Start",
+            color: 0xff0000,
+            description: `Size ${size} gather started on **${mapName}**`
+        }
+    })
+}
+
 flagCap = (playerName, teamName) => {
-    discord.discordState.discordChannel.send(`**${playerName}** scored for the **${teamName}** team!`)
+    discord.discordState.discordChannel.send({
+        embed: {
+            title: `${teamName} cap`,
+            color: 0xff0000,
+            description: `**${playerName}** scored for the **${teamName}** team!`
+        }
+    })
 }
 
 gatherPause = () => {
-    discord.discordState.discordChannel.send(`Gather paused...`)
+    discord.discordState.discordChannel.send({
+        embed: {
+            title: `Gather Paused`,
+            color: 0xff0000,
+        }
+    })
 }
 
 gatherUnpause = () => {
-    discord.discordState.discordChannel.send(`Gather unpaused! GO GO GO`)
+    discord.discordState.discordChannel.send({
+        embed: {
+            title: `Gather Unpaused`,
+            color: 0xff0000,
+            description: "GO GO GO"
+        }
+    })
 }
 
 module.exports = {
-    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause
+    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause, gatherStart
 }
 

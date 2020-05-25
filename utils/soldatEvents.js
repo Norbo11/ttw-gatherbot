@@ -25,6 +25,12 @@ registerSoldatEventListeners = (soldatClient) => {
             eventText = text
         }
 
+        match = text.match(/--- gatherstart (?<mapName>.*?) (?<gatherSize>\d*)/)
+        if (match !== null) {
+            gather.gatherStart(match.groups["mapName"], match.groups["gatherSize"])
+            eventText = text
+        }
+
         match = text.match(/--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/)
         if (match !== null) {
             gather.endGame(match.groups["alphaTickets"], match.groups["bravoTickets"], match.groups["alphaCaps"], match.groups["bravoCaps"])
