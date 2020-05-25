@@ -1,6 +1,7 @@
 const gather = require("../utils/gather.js")
 const soldat = require("../utils/soldat")
 const logger = require("../utils/logger")
+const utils = require("../utils/commandUtils")
 
 module.exports = {
     aliases: ["size"],
@@ -24,10 +25,11 @@ module.exports = {
             if (text.match(/Initializing bunkers/)) {
                 gather.gatherState.currentSize = newSize
                 gather.gatherState.currentQueue = []
-                gather.displayQueue(message)
                 return true;
             }
             return false;
+        }, () => {
+            utils.displayQueueWithServerInfo(message)
         })
 
         soldat.soldatClient.write(`/gathersize ${newSize}\n`);

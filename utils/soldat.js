@@ -14,15 +14,23 @@ const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, fun
     soldatEvents.registerSoldatEventListeners(soldatClient)
 })
 
-listenForServerResponse = (processData, callback = () => {}) => {
-
+listenForServerResponse = (processData, callback = () => {
+}, raw = false) => {
     const listener = (data) => {
-        const read = data.toString();
-        logger.log.info(`Received from server: ${read.trim()}`)
-        if (processData(read)) {
+        if (!raw) {
+            data = data.toString()
+            logger.log.info(`Received active raw event from server: ${data.trim()}`)
+        }
+
+        logger.log.info(`Received active event from server: ${data}`)
+
+        const result = processData(data)
+
+        if (result !== undefined && result !== false) {
             logger.log.info("Got the data that we wanted, removing listener.")
+
             soldatClient.removeListener("data", listener)
-            callback()
+            callback(result)
         }
     }
 
@@ -106,7 +114,7 @@ const soldatRefreshxParser = new Parser()
     .floatbe("blueFlagXLocation")
     .floatbe("blueFlagYLocation")
     .array("teamScores", {
-        length:4,
+        length: 4,
         type: new Parser()
             .uint16("score")
     })
@@ -130,27 +138,27 @@ const soldatRefreshxParser = new Parser()
 
 
 getServerInfo = (callback) => {
-    const listener = (data) => {
-        if (data.toString().startsWith("REFRESHX")) {
+    logger.log.info("Getting server info using REFRESHX...")
+
+    listenForServerResponse(data => {
+        const stringData = data.toString()
+        const refreshXIndex = stringData.indexOf("REFRESHX")
+
+        if (refreshXIndex !== -1) {
+            data = data.slice(refreshXIndex, data.length)
             const parsedInfo = soldatRefreshxParser.parse(data)
-
-            soldatClient.removeListener("data", listener)
-            callback(parsedInfo)
+            logger.log.info("Received and parsed data from REFRESHX")
+            return parsedInfo
         }
-    }
+        return false
+    }, callback, true)
 
-    soldatClient.addListener("data", listener)
     soldatClient.write("REFRESHX\n")
-
-    setTimeout(() => {
-        logger.log.info("7 seconds have passed, removing listener.")
-        soldatClient.removeListener("data", listener)
-    }, 7000)
 }
 
 
 getGatherStatus = (callback) => {
-    soldatClient.listenForServerResponse(text => {
+    listenForServerResponse(text => {
         const parts = text.split(" ")
 
         if (parts[0] !== "---") {

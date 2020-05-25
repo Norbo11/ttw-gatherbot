@@ -8,11 +8,9 @@ module.exports = {
     description: "View the current gather queue.",
     execute(client, message, args) {
         if (gather.gatherInProgress()) {
-            soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) =>
-                utils.displayGatherStatus(message, alphaTickets, bravoTickets, alphaCaps, bravoCaps)
-            )
+            utils.displayGatherStatus(message)
         } else {
-            gather.displayQueue(message)
+            utils.displayQueueWithServerInfo(message)
         }
     },
 };

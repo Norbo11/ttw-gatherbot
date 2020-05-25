@@ -1,6 +1,7 @@
 const gather = require("../utils/gather")
 const _ = require("lodash")
 const logger = require("../utils/logger")
+const utils = require("../utils/commandUtils")
 
 module.exports = {
     aliases: ["del", "remove"],
@@ -12,6 +13,6 @@ module.exports = {
         }
 
         _.remove(gather.gatherState.currentQueue, (x) => x === message.author)
-        gather.displayQueue(message)
+        utils.displayQueueWithServerInfo(message)
     },
 };

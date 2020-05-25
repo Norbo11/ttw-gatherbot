@@ -1,5 +1,6 @@
-const gather = require("../utils/gather.js")
+const gather = require("../utils/gather")
 const logger = require("../utils/logger")
+const utils = require("../utils/commandUtils")
 
 module.exports = {
     aliases: ["add"],
@@ -17,7 +18,7 @@ module.exports = {
         if (gather.gatherState.currentQueue.length === gather.gatherState.currentSize) {
             gather.startGame(message)
         } else {
-            gather.displayQueue(message)
+            utils.displayQueueWithServerInfo(message)
         }
     },
 };

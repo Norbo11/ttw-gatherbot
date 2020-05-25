@@ -5,7 +5,6 @@ const discord = require("../utils/discord")
 gatherState = {
     currentSize: 6,
     currentQueue: [],
-    currentMap: "ttw_test",
     alphaTeam: [],
     bravoTeam: [],
     gameInProgress: false
@@ -15,13 +14,28 @@ gatherInProgress = () => {
     return gatherState.gameInProgress
 }
 
-displayQueue = (message) => {
+displayQueue = (message, serverInfo) => {
     const queueMembers = gatherState.currentQueue.map(user => `<@${user.id}>`)
     for (let i = 0; i < gatherState.currentSize - gatherState.currentQueue.length; i++) {
         queueMembers.push(":bust_in_silhouette:")
     }
 
-    message.channel.send(`[${queueMembers.join(" - ")}] [${gatherState.currentMap}]`)
+    message.channel.send({
+        embed: {
+            title: "Gather Info",
+            color: 0xff0000,
+            fields: [
+                {
+                    name: "Current Queue",
+                    value: `${queueMembers.join(" - ")}`
+                },
+                {
+                    name: "Map",
+                    value: `${serverInfo["mapName"]}`,
+                }
+            ]
+        }
+    })
 }
 
 getPlayerStrings = () => {

@@ -6,8 +6,6 @@ module.exports = {
     aliases: ["serverinfo"],
     description: "Get detailed information about the server.",
     execute(client, message, args) {
-        soldat.getServerInfo(serverInfo => {
-            utils.displayServerInfo(message, serverInfo)
-        })
+        utils.displayServerInfo(message)
     },
 };
