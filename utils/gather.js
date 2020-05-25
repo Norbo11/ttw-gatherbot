@@ -2,16 +2,24 @@ const _ = require("lodash")
 const logger = require("../utils/logger")
 const discord = require("../utils/discord")
 
+
+IN_GAME_STATES = {
+    "NO_GATHER": "NO_GATHER",
+    "GATHER_PRE_RESET": "GATHER_PRE_RESET",
+    "GATHER_STARTED": "GATHER_STARTED",
+}
+
+
 gatherState = {
     currentSize: 6,
     currentQueue: [],
     alphaTeam: [],
     bravoTeam: [],
-    gameInProgress: false
+    inGameState: IN_GAME_STATES["NO_GATHER"]
 }
 
 gatherInProgress = () => {
-    return gatherState.gameInProgress
+    return gatherState.inGameState !== IN_GAME_STATES["NO_GATHER"]
 }
 
 displayQueue = (message, serverInfo) => {
@@ -70,7 +78,7 @@ startGame = (message) => {
 
     gatherState.alphaTeam = alphaPlayers
     gatherState.bravoTeam = bravoPlayers
-    gatherState.gameInProgress = true
+    gatherState.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
     message.channel.send({
         embed: {
@@ -93,7 +101,7 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
     const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
     const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
 
-    gatherState.gameInProgress = false
+    gatherState.inGameState = IN_GAME_STATES["NO_GATHER"]
     gatherState.currentQueue = []
 
     discord.discordState.discordChannel.send({
@@ -115,6 +123,8 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 }
 
 gatherStart = (mapName, size) => {
+    gatherState.inGameState = IN_GAME_STATES["GATHER_STARTED"]
+
     discord.discordState.discordChannel.send({
         embed: {
             title: "Gather Start",
@@ -154,6 +164,7 @@ gatherUnpause = () => {
 }
 
 module.exports = {
-    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause, gatherStart, getPlayerFields
+    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause,
+    gatherStart, getPlayerFields, IN_GAME_STATES
 }
 

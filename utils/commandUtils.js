@@ -5,13 +5,23 @@ const soldat = require("./soldat")
 
 displayGatherStatus = (message) => {
     soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
+
+        let description = undefined;
+
+        if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
+            description = `**Gather Waiting for Reset**`
+
+        } else if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
+            description = `**Gather In Progress**\n` +
+                `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
+                `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
+        }
+
         message.channel.send({
             embed: {
                 color: 0xff0000,
                 title: "Gather Info",
-                description: `**Gather In Progress**\n` +
-                    `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
-                    `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`,
+                description: description,
                 fields: gather.getPlayerFields()
             }
         });
