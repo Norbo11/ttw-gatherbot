@@ -134,8 +134,6 @@ getServerInfo = (callback) => {
         if (data.toString().startsWith("REFRESHX")) {
             const parsedInfo = soldatRefreshxParser.parse(data)
 
-            console.log(parsedInfo)
-
             soldatClient.removeListener("data", listener)
             callback(parsedInfo)
         }
