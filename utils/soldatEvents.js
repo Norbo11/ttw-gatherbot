@@ -14,10 +14,6 @@ registerSoldatEventListeners = (soldatClient) => {
         }
 
         let eventText = undefined
-        if (text.match(/USER RESET, GATHER RESTART!/)) {
-            soldatClient.write("/say ggwp\n");
-            eventText = text
-        }
 
         let match = text.match(/(?<playerName>.*?) scores for (?<teamName>.*?) Team/)
         if (match !== null) {
