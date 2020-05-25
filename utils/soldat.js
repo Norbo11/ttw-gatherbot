@@ -37,7 +37,8 @@ soldatClient.on("error", error => {
  * function. Defaults to 7 seconds.
  */
 listenForServerResponse = (processData,
-                           callback = () => {},
+                           callback = () => {
+                           },
                            raw = false,
                            timeout = 7000) => {
     const listener = (data) => {
@@ -71,7 +72,7 @@ listenForServerResponse = (processData,
 // This is a parser used to parse the output of the REFRESHX command: https://wiki.soldat.pl/index.php/Refreshx
 const soldatRefreshxParser = new Parser()
     .string("refreshx", {
-        length: 10,
+        length: 10, // 8 chars for REFRESHX plus 2 for \r\n
         stripNull: true
     })
     .array("names", {
@@ -114,7 +115,7 @@ const soldatRefreshxParser = new Parser()
     .array("pings", {
         length: 32,
         type: new Parser()
-            .uint32le("playerPing")
+            .int32le("playerPing")
     })
     .array("ids", {
         length: 32,
@@ -172,8 +173,12 @@ getServerInfo = (callback) => {
         const refreshXIndex = stringData.indexOf("REFRESHX")
 
         if (refreshXIndex !== -1) {
-            data = data.slice(refreshXIndex, data.length)
-            const parsedInfo = soldatRefreshxParser.parse(data)
+            const refreshXData = data.slice(refreshXIndex, data.length)
+            if (refreshXData.length !== 2002) {
+               logger.log.error(`REFRESHX packet is not of the expected length (${refreshXData.length} bytes instead of 2002)`)
+            }
+            logger.log.info(`REFRESHX length is ${refreshXData.length}`)
+            const parsedInfo = soldatRefreshxParser.parse(refreshXData)
             logger.log.info("Received and parsed data from REFRESHX")
             return parsedInfo
         }
@@ -221,8 +226,6 @@ setServerPassword = (password, callback) => {
 }
 
 changeMap = (mapName, callback) => {
-    discord.discordState.discordChannel.send("Changing map, hang on...")
-
     listenForServerResponse(text => {
         if (text.match(/Map not found/)) {
             return "not_found";

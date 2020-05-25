@@ -11,6 +11,8 @@ module.exports = {
             return;
         }
 
+        message.channel.send("Changing map, hang on...")
+
         soldat.changeMap(args[0], (mapChangeResult) => {
             if (mapChangeResult === "found") {
                 message.channel.send({

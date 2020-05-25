@@ -3,6 +3,21 @@ const logger = require("./logger")
 const discord = require("./discord")
 const soldat = require("./soldat")
 const constants = require("../constants")
+const random = require("./random")
+
+MAPS_LIST = [
+    "ttw_42ndWood.pms", "ttw_Borderwars.pms", "ttw_Concrete.pms", "ttw_Forgotten.pms", "ttw_Junkyard.pms", "ttw_Mudder.pms", "ttw_rime.pms", "ttw_Take.pms", "ttw_Village.pms",
+    "ttw_Afrique.pms", "ttw_Bridge.pms", "ttw_crater.pms", "ttw_Fort.pms", "ttw_kaibatsu.pms", "ttw_Myst2.pms", "ttw_Rime.pms", "ttw_Tenshin2.pms", "ttw_Waste.pms",
+    "ttw_afterGlory.pms", "ttw_cadet.pms", "ttw_crecent.pms", "ttw_fortress.pms", "ttw_kamiquasi.pms", "ttw_Myst.pms", "ttw_Tenshin.pms", "ttw_WIP.pms",
+    "ttw_Alize.pms", "ttw_Caen.pms", "ttw_Creek.pms", "ttw_Frostbite.pms", "ttw_Kampfer.pms", "ttw_NewNature.pms", "ttw_rover.pms", "ttw_Teroya.pms", "ttw_Ypres-fix.pms",
+    "ttw_alphathing.pms", "ttw_Cangaceiros.pms", "ttw_crimson.pms", "ttw_frost.pms", "ttw_Krath.pms", "ttw_Nomans.pms", "ttw_shaft.pms", "ttw_tower.pms",
+    "ttw_Anoxi.pms", "ttw_cannibals.pms", "ttw_Dawn.pms", "ttw_generic.pms", "ttw_Limbo.pms", "ttw_nworld.pms", "ttw_Skybridge.pms", "ttw_Toxic.pms",
+    "ttw_art.pms", "ttw_castle.pms", "ttw_desert.pms", "ttw_Gloryhill.pms", "ttw_marsh.pms", "ttw_paperwar.pms", "ttw_Skyscrapers.pms", "ttw_Trainyards.pms", "ttw_Ypres_n.pms",
+    "ttw_Autumn.pms", "ttw_Cathedral.pms", "ttw_Drain.pms", "ttw_Grasshill.pms", "ttw_meteorite.pms", "ttw_Pinewood.pms", "ttw_SoldiersFoly.pms", "ttw_Untitled3.pms", "ttw_Ypres.pms",
+    "ttw_Bachvu.pms", "ttw_ColdMorning.pms", "ttw_El_Alamein.pms", "ttw_hue.pms", "ttw_Mound", "Kopia.pms", "ttw_Plat.pms", "ttw_storm.pms", "ttw_Valley.pms",
+    "ttw_BattleField.pms", "ttw_ColdMorning.PMS.old", "ttw_Forest.pms", "ttw_Junkyard2.pms", "ttw_Mound.pms", "ttw_Rage.pms", "ttw_Struggle.pms", "ttw_Verdun.pms"
+]
+
 
 IN_GAME_STATES = {
     "NO_GATHER": "NO_GATHER",
@@ -133,6 +148,8 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
     gatherState.inGameState = IN_GAME_STATES["NO_GATHER"]
     gatherState.currentQueue = []
+
+    soldat.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
 
     discord.discordState.discordChannel.send({
         embed: {
