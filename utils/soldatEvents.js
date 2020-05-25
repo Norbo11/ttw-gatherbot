@@ -39,13 +39,17 @@ registerSoldatEventListeners = (soldatClient) => {
 
         match = text.match(/--- gatherpause/)
         if (match !== null) {
-            gather.gatherPause()
+            if (gather.gatherInProgress()) {
+                gather.gatherPause()
+            }
             eventText = text
         }
 
         match = text.match(/--- gatherunpause/)
         if (match !== null) {
-            gather.gatherUnpause()
+            if (gather.gatherInProgress()) {
+                gather.gatherUnpause()
+            }
             eventText = text
         }
 
