@@ -74,8 +74,6 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
     const loserCaps = alphaTickets > bravoTickets ? bravoCaps : alphaCaps
     const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
     const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
-    let winnerString = undefined;
-    let winnerTitle = undefined;
 
     gatherState.gameInProgress = false
     gatherState.currentQueue = []
@@ -102,7 +100,15 @@ flagCap = (playerName, teamName) => {
     discord.discordState.discordChannel.send(`**${playerName}** scored for the **${teamName}** team!`)
 }
 
+gatherPause = () => {
+    discord.discordState.discordChannel.send(`Gather paused...`)
+}
+
+gatherUnpause = () => {
+    discord.discordState.discordChannel.send(`Gather unpaused! GO GO GO`)
+}
+
 module.exports = {
-    gatherState, gatherInProgress, startGame, displayQueue, endGame
+    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause
 }
 

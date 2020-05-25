@@ -24,10 +24,19 @@ registerSoldatEventListeners = (soldatClient) => {
             gather.flagCap(match.groups["playerName"], match.groups["teamName"])
         }
 
-        console.log(text)
         match = text.match(/--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/)
         if (match !== null) {
             gather.endGame(match.groups["alphaTickets"], match.groups["bravoTickets"], match.groups["alphaCaps"], match.groups["bravoCaps"])
+        }
+
+        match = text.match(/--- gatherpause/)
+        if (match !== null) {
+            gather.gatherPause()
+        }
+
+        match = text.match(/--- gatherunpause/)
+        if (match !== null) {
+            gather.gatherUnpause()
         }
     });
 }
