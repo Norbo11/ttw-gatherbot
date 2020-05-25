@@ -33,8 +33,10 @@ const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, fun
  * @param timeout: How long should we wait for the server to send the data we want, as defined by the processData
  * function. Defaults to 7 seconds.
  */
-listenForServerResponse = (processData, callback = () => {
-}, raw = false, timeout = 7000) => {
+listenForServerResponse = (processData,
+                           callback = () => {},
+                           raw = false,
+                           timeout = 7000) => {
     const listener = (data) => {
         if (!raw) {
             data = data.toString()
@@ -55,7 +57,7 @@ listenForServerResponse = (processData, callback = () => {
 
     soldatClient.addListener("data", listener)
 
-    // TODO: Currently this removal happens even if the data is found. That's okay for now.
+    // TODO: Currently this removal happens even if the data is found. The extra logging message is okay for now.
     setTimeout(() => {
         logger.log.info(`${timeout}ms has passed, removing listener.`)
         soldatClient.removeListener("data", listener)
@@ -205,6 +207,34 @@ getGatherStatus = (callback) => {
 }
 
 
+setServerPassword = (password, callback) => {
+    logger.log.info(`Setting server password to ${password}`)
+
+    listenForServerResponse(text => {
+        return text.match(/Server password changed to .*/);
+    }, callback);
+
+    soldatClient.write(`/password ${password}\n`);
+}
+
+changeMap = (mapName, callback) => {
+    discord.discordState.discordChannel.send("Changing map, hang on...")
+
+    listenForServerResponse(text => {
+        if (text.match(/Map not found/)) {
+            return "not_found";
+        }
+
+        if (text.match(/Initializing bunkers/)) {
+            return "found";
+        }
+
+        return false;
+    }, callback)
+
+    soldatClient.write(`/map ${mapName}\n`);
+}
+
 module.exports = {
-    soldatClient, listenForServerResponse, getServerInfo, getGatherStatus
+    soldatClient, listenForServerResponse, getServerInfo, getGatherStatus, setServerPassword, changeMap
 }

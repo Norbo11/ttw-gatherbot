@@ -1,7 +1,8 @@
 const _ = require("lodash")
-const logger = require("../utils/logger")
-const discord = require("../utils/discord")
-
+const logger = require("./logger")
+const discord = require("./discord")
+const soldat = require("./soldat")
+const constants = require("../constants")
 
 IN_GAME_STATES = {
     "NO_GATHER": "NO_GATHER",
@@ -16,6 +17,13 @@ gatherState = {
     alphaTeam: [],
     bravoTeam: [],
     inGameState: IN_GAME_STATES["NO_GATHER"]
+}
+
+getServerLinkField = (password = "goaway") => {
+    return {
+        name: "Link",
+        value: `soldat://${constants.SERVER_IP}:${constants.SERVER_PORT}/${password}`,
+    }
 }
 
 gatherInProgress = () => {
@@ -80,12 +88,26 @@ startGame = (message) => {
     gatherState.bravoTeam = bravoPlayers
     gatherState.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
-    message.channel.send({
-        embed: {
-            title: "Gather Info",
-            color: 0xff0000,
-            fields: getPlayerFields()
+    const password = Math.random().toString(36).substring(7);
+
+    soldat.setServerPassword(password, () => {
+        for (let user in shuffledQueue) {
+            user.message({
+                embed: {
+                    title: "Gather Started",
+                    color: 0xff0000,
+                    fields: getPlayerFields() + [getServerLinkField(password)]
+                }
+            })
         }
+
+        message.channel.send({
+            embed: {
+                title: "Gather Started",
+                color: 0xff0000,
+                fields: getPlayerFields()
+            }
+        })
     })
 }
 
@@ -106,7 +128,7 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
     discord.discordState.discordChannel.send({
         embed: {
-            title: "Gather End",
+            title: "Gather Finished",
             color: 0xff0000,
             fields: [
                 {
@@ -127,9 +149,9 @@ gatherStart = (mapName, size) => {
 
     discord.discordState.discordChannel.send({
         embed: {
-            title: "Gather Start",
+            title: "Gather Started",
             color: 0xff0000,
-            description: `Size ${size} gather started on **${mapName}**`
+            description: `Size ${size} gather started on **${mapName}**. GLHF!`
         }
     })
 }
@@ -165,6 +187,6 @@ gatherUnpause = () => {
 
 module.exports = {
     gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause,
-    gatherStart, getPlayerFields, IN_GAME_STATES
+    gatherStart, getPlayerFields, IN_GAME_STATES, getServerLinkField
 }
 

@@ -6,33 +6,27 @@ module.exports = {
     aliases: ["map"],
     description: "View or change the current map.",
     execute(client, message, args) {
-        message.channel.send("Changing map, hang on...")
+        if (args.length !== 1) {
+            message.channel.send("Please provide a single map name.")
+            return;
+        }
 
-        soldat.listenForServerResponse(text => {
-            if (text.match(/Map not found/)) {
+        soldat.changeMap(args[0], (mapChangeResult) => {
+            if (mapChangeResult === "found") {
                 message.channel.send({
                     embed: {
-                        color: 3447003,
-                        description: "Map not found!",
-                    }
-                });
-                return true;
-            }
-
-            if (text.match(/Initializing bunkers/)) {
-                const args = message.content.slice(5,).split(" ");
-                message.channel.send({
-                    embed: {
-                        color: 3447003,
+                        color: 0xff0000,
                         description: `Map changed to: **${args}**`,
                     }
                 });
-                return true;
+            } else {
+                message.channel.send({
+                    embed: {
+                        color: 0xff0000,
+                        description: "Map not found!",
+                    }
+                });
             }
-
-            return false;
         })
-
-        soldat.soldatClient.write(`/map ${args[0]}\n`);
     },
 };
