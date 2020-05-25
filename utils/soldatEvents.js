@@ -27,7 +27,7 @@ registerSoldatEventListeners = (soldatClient) => {
 
         match = text.match(/--- gatherstart (?<mapName>.*?) (?<gatherSize>\d*)/)
         if (match !== null) {
-            gather.gatherStart(match.groups["mapName"], match.groups["gatherSize"])
+            gather.gatherStart(match.groups["mapName"], gather.gatherState.currentSize)
             eventText = text
         }
 
