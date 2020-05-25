@@ -50,10 +50,10 @@ displayServerInfo = (message) => {
             const playerPing = serverInfo["pings"][i]["playerPing"]
 
             if (playerTeam === 1) {
-                alphaPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
+                alphaPlayerStrings.push(`**${playerName}** (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
             if (playerTeam === 2) {
-                bravoPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
+                bravoPlayerStrings.push(`**${playerName}** (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
         }
 
