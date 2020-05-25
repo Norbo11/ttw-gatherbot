@@ -2,42 +2,19 @@ const net = require("net")
 const constants = require("../constants")
 const logger = require("../utils/logger")
 const discord = require("../utils/discord")
+const soldatEvents = require("../utils/soldatEvents")
 const Parser = require("binary-parser").Parser
 
 logger.log.info(`Attempting admin connection with Soldat Server at ${constants.SERVER_IP}:${constants.SERVER_PORT}/${constants.SERVER_ADMIN_PASSWORD}`)
-
-registerSoldatEventListeners = (soldatClient) => {
-    logger.log.info("Registered non-command event listeners.")
-
-    soldatClient.addListener("data", function (data) {
-        const text = data.toString();
-
-        // TODO: Server keeps spamming these messages, should probably silence them
-        if (text.startsWith("--- hwid")) {
-            return;
-        }
-
-        logger.log.info(`Received from server: ${text.trim()}`)
-
-        if (text.match(/USER RESET, GATHER RESTART!/)) {
-            soldatClient.write("/say ggwp\n");
-        }
-
-        const match = text.match(/(?<playerName>.*?) scores for (?<teamName>.*?) Team/)
-        if (match !== null) {
-            discord.discordState.discordChannel.send(`${match.groups["playerName"]} scored for the ${match.groups["teamName"]} team!`)
-        }
-    });
-}
 
 const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, function () {
     soldatClient.write(`${constants.SERVER_ADMIN_PASSWORD}\n`)
     logger.log.info("Successfully connected to the Soldat server.")
 
-    registerSoldatEventListeners(soldatClient)
+    soldatEvents.registerSoldatEventListeners(soldatClient)
 })
 
-listenForServerResponse = (processData) => {
+listenForServerResponse = (processData, callback = () => {}) => {
 
     const listener = (data) => {
         const read = data.toString();
@@ -45,6 +22,7 @@ listenForServerResponse = (processData) => {
         if (processData(read)) {
             logger.log.info("Got the data that we wanted, removing listener.")
             soldatClient.removeListener("data", listener)
+            callback()
         }
     }
 
@@ -151,7 +129,7 @@ const soldatRefreshxParser = new Parser()
     })
 
 
-getServerInfo = () => {
+getServerInfo = (callback) => {
     const listener = (data) => {
         if (data.toString().startsWith("REFRESHX")) {
             const parsedInfo = soldatRefreshxParser.parse(data)
@@ -159,6 +137,7 @@ getServerInfo = () => {
             console.log(parsedInfo)
 
             soldatClient.removeListener("data", listener)
+            callback(parsedInfo)
         }
     }
 
@@ -172,6 +151,28 @@ getServerInfo = () => {
 }
 
 
+getGatherStatus = (callback) => {
+    soldatClient.listenForServerResponse(text => {
+        const parts = text.split(" ")
+
+        if (parts[0] !== "---") {
+            return false;
+        }
+
+        const alphaTickets = parseInt(parts[2])
+        const bravoTickets = parseInt(parts[3])
+
+        const alphaCaps = parseInt(parts[4])
+        const bravoCaps = parseInt(parts[5])
+
+        callback(alphaTickets, bravoTickets, alphaCaps, bravoCaps)
+        return true;
+    });
+
+    soldatClient.write("=== status\n");
+}
+
+
 module.exports = {
-    soldatClient, listenForServerResponse, getServerInfo
+    soldatClient, listenForServerResponse, getServerInfo, getGatherStatus
 }

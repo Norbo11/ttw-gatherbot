@@ -1,17 +1,18 @@
 const _ = require("lodash")
-const soldat = require("./soldat")
 const logger = require("../utils/logger")
+const discord = require("../utils/discord")
 
 gatherState = {
     currentSize: 6,
     currentQueue: [],
     currentMap: "ttw_test",
     alphaTeam: [],
-    bravoTeam: []
+    bravoTeam: [],
+    gameInProgress: false
 }
 
 gatherInProgress = () => {
-    return gatherState.currentSize === gatherState.currentQueue.length
+    return gatherState.gameInProgress
 }
 
 displayQueue = (message) => {
@@ -19,25 +20,15 @@ displayQueue = (message) => {
     for (let i = 0; i < gatherState.currentSize - gatherState.currentQueue.length; i++) {
         queueMembers.push(":bust_in_silhouette:")
     }
+
     message.channel.send(`[${queueMembers.join(" - ")}] [${gatherState.currentMap}]`)
 }
 
-getPlayerFields = () => {
+getPlayerStrings = () => {
     const alphaPlayersString = gatherState.alphaTeam.map(user => `<@${user.id}>`).join(" - ")
     const bravoPlayersString = gatherState.bravoTeam.map(user => `<@${user.id}>`).join(" - ")
 
-    return [
-        {
-            name: "Alpha",
-            value: `:a:: ${alphaPlayersString}`,
-            inline: true
-        },
-        {
-            name: "Bravo",
-            value: `:regional_indicator_b:: ${bravoPlayersString}`,
-            inline: true
-        }
-    ]
+    return {alphaPlayersString, bravoPlayersString}
 }
 
 startGame = (message) => {
@@ -48,58 +39,70 @@ startGame = (message) => {
 
     gatherState.alphaTeam = alphaPlayers
     gatherState.bravoTeam = bravoPlayers
+    gatherState.gameInProgress = true
+
+    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
 
     message.channel.send({
         embed: {
             title: "Gather Info",
             color: 0xff0000,
-            fields: getPlayerFields()
+            fields: [
+                {
+                    name: "Alpha Team",
+                    value: `${discord.teamEmoji("Alpha")}: ${alphaPlayersString}`,
+                    inline: true
+                },
+                {
+                    name: "Bravo Team",
+                    value: `${discord.teamEmoji("Bravo")}: ${bravoPlayersString}`,
+                    inline: true
+                }
+            ]
         }
     })
 }
 
-getGatherStatus = (message) => {
-    soldat.listenForServerResponse(text => {
-        const parts = text.split(" ")
+endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
+    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
 
-        if (parts[0] !== "---") {
-            return false;
+    const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
+    const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
+    const winnerTickets = alphaTickets > bravoTickets ? alphaTickets : bravoTickets
+    const loserTickets = alphaTickets > bravoTickets ? bravoTickets : alphaTickets
+    const winnerCaps = alphaTickets > bravoTickets ? alphaCaps : bravoCaps
+    const loserCaps = alphaTickets > bravoTickets ? bravoCaps : alphaCaps
+    const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
+    const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
+    let winnerString = undefined;
+    let winnerTitle = undefined;
+
+    gatherState.gameInProgress = false
+    gatherState.currentQueue = []
+
+    discord.discordState.discordChannel.send({
+        embed: {
+            title: "Gather End",
+            color: 0xff0000,
+            fields: [
+                {
+                    name: `**Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
+                    value: `${discord.teamEmoji(winningTeam)}: ${winningPlayersString}`,
+                },
+                {
+                    name: `Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
+                    value: `${discord.teamEmoji(losingTeam)}: ${losingPlayersString}`,
+                },
+            ]
         }
+    })
+}
 
-        const alphaTickets = parseInt(parts[2])
-        const bravoTickets = parseInt(parts[3])
-
-        const alphaCaps = parseInt(parts[4])
-        const bravoCaps = parseInt(parts[5])
-
-        // TODO: This might need different logic
-        if (alphaTickets === 500 && bravoTickets === 500 && alphaCaps === 0 && bravoCaps === 0) {
-            message.channel.send({
-                embed: {
-                    color: 0xff0000,
-                    description: "No gather in progress!",
-                }
-            });
-        } else {
-            message.channel.send({
-                embed: {
-                    color: 0xff0000,
-                    title: "Gather Info",
-                    description: `**Gather In Progress**\n` +
-                        `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
-                        `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`,
-                    fields: getPlayerFields()
-                }
-            });
-        }
-
-        return true;
-    });
-
-    soldat.soldatClient.write("=== status\n");
+flagCap = (playerName, teamName) => {
+    discord.discordState.discordChannel.send(`**${playerName}** scored for the **${teamName}** team!`)
 }
 
 module.exports = {
-    gatherState, gatherInProgress, startGame, getPlayerFields, displayQueue, getGatherStatus
+    gatherState, gatherInProgress, startGame, displayQueue, endGame
 }
 
