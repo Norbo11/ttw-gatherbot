@@ -7,7 +7,7 @@ module.exports = {
     aliases: ["del", "remove"],
     description: "Remove yourself from the gather queue.",
     execute(client, message, args) {
-        if (gather.gatherState.gameInProgress) {
+        if (gather.gatherInProgress()) {
             message.channel.send("A gather is currently in progress.")
             return
         }

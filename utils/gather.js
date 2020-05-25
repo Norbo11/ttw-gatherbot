@@ -19,6 +19,37 @@ gatherState = {
     inGameState: IN_GAME_STATES["NO_GATHER"]
 }
 
+getPlayerStrings = () => {
+    const alphaPlayersString = gatherState.alphaTeam.length > 0 ? gatherState.alphaTeam.map(user => `<@${user.id}>`).join("\n") : "No players"
+    const bravoPlayersString = gatherState.bravoTeam.length > 0 ? gatherState.bravoTeam.map(user => `<@${user.id}>`).join("\n") : "No players"
+
+    return {alphaPlayersString, bravoPlayersString}
+}
+
+getPlayerFields = () => {
+    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
+
+    return [
+        {
+            name: `${discord.teamEmoji("Alpha")} Alpha Team`,
+            value: `${alphaPlayersString}`,
+            inline: true
+        },
+        {
+            name: `${discord.teamEmoji("Bravo")} Bravo Team`,
+            value: `${bravoPlayersString}`,
+            inline: true
+        }
+    ];
+}
+
+getMapField = (mapName) => {
+    return {
+        name: "Map",
+        value: `${mapName}`,
+    }
+}
+
 getServerLinkField = (password = "goaway") => {
     return {
         name: "Link",
@@ -45,37 +76,10 @@ displayQueue = (message, serverInfo) => {
                     name: "Current Queue",
                     value: `${queueMembers.join(" - ")}`
                 },
-                {
-                    name: "Map",
-                    value: `${serverInfo["mapName"]}`,
-                }
+                getMapField(serverInfo["mapName"])
             ]
         }
     })
-}
-
-getPlayerStrings = () => {
-    const alphaPlayersString = gatherState.alphaTeam.map(user => `<@${user.id}>`).join("\n")
-    const bravoPlayersString = gatherState.bravoTeam.map(user => `<@${user.id}>`).join("\n")
-
-    return {alphaPlayersString, bravoPlayersString}
-}
-
-getPlayerFields = () => {
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
-
-    return [
-        {
-            name: `${discord.teamEmoji("Alpha")} Alpha Team`,
-            value: `${alphaPlayersString}`,
-            inline: true
-        },
-        {
-            name: `${discord.teamEmoji("Bravo")} Bravo Team`,
-            value: `${bravoPlayersString}`,
-            inline: true
-        }
-    ];
 }
 
 startGame = (message) => {
@@ -91,22 +95,26 @@ startGame = (message) => {
     const password = Math.random().toString(36).substring(7);
 
     soldat.setServerPassword(password, () => {
-        for (let user in shuffledQueue) {
-            user.message({
+        soldat.getServerInfo(serverInfo => {
+            console.log(serverInfo["mapName"])
+
+            shuffledQueue.forEach(user => {
+                user.send({
+                    embed: {
+                        title: "Gather Started",
+                        color: 0xff0000,
+                        fields: [getServerLinkField("password"), ...getPlayerFields(), getMapField(serverInfo["mapName"])]
+                    }
+                })
+            })
+
+            message.channel.send({
                 embed: {
                     title: "Gather Started",
                     color: 0xff0000,
-                    fields: getPlayerFields() + [getServerLinkField(password)]
+                    fields: [...getPlayerFields(), getMapField(serverInfo["mapName"])]
                 }
             })
-        }
-
-        message.channel.send({
-            embed: {
-                title: "Gather Started",
-                color: 0xff0000,
-                fields: getPlayerFields()
-            }
         })
     })
 }
@@ -187,6 +195,6 @@ gatherUnpause = () => {
 
 module.exports = {
     gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause,
-    gatherStart, getPlayerFields, IN_GAME_STATES, getServerLinkField
+    gatherStart, getPlayerFields, IN_GAME_STATES, getServerLinkField, getMapField
 }
 

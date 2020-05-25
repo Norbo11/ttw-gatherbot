@@ -2,7 +2,6 @@ const net = require("net")
 const constants = require("../constants")
 const logger = require("../utils/logger")
 const discord = require("../utils/discord")
-const soldatEvents = require("../utils/soldatEvents")
 const Parser = require("binary-parser").Parser
 
 logger.log.info(`Attempting admin connection with Soldat Server at ${constants.SERVER_IP}:${constants.SERVER_PORT}/${constants.SERVER_ADMIN_PASSWORD}`)
@@ -10,8 +9,12 @@ logger.log.info(`Attempting admin connection with Soldat Server at ${constants.S
 const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, function () {
     soldatClient.write(`${constants.SERVER_ADMIN_PASSWORD}\n`)
     logger.log.info("Successfully connected to the Soldat server.")
+})
 
-    soldatEvents.registerSoldatEventListeners(soldatClient)
+soldatClient.on("error", error => {
+    logger.log.error(`Error in soldat client: ${error}`)
+    logger.log.flush()
+    process.exit(1)
 })
 
 /* This is the single function that we should use to fetch data from the server. It attaches a temporary listener
