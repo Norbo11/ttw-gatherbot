@@ -19,9 +19,9 @@ gatherState = {
     inGameState: IN_GAME_STATES["NO_GATHER"]
 }
 
-getPlayerStrings = () => {
-    const alphaPlayersString = gatherState.alphaTeam.length > 0 ? gatherState.alphaTeam.map(user => `<@${user.id}>`).join("\n") : "No players"
-    const bravoPlayersString = gatherState.bravoTeam.length > 0 ? gatherState.bravoTeam.map(user => `<@${user.id}>`).join("\n") : "No players"
+getPlayerStrings = (delim = "\n") => {
+    const alphaPlayersString = gatherState.alphaTeam.length > 0 ? gatherState.alphaTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
+    const bravoPlayersString = gatherState.bravoTeam.length > 0 ? gatherState.bravoTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
 
     return {alphaPlayersString, bravoPlayersString}
 }
@@ -120,7 +120,7 @@ startGame = (message) => {
 }
 
 endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
+    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings(" - ")
 
     const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
     const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
