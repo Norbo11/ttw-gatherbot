@@ -103,7 +103,7 @@ startGame = (message) => {
                     embed: {
                         title: "Gather Started",
                         color: 0xff0000,
-                        fields: [getServerLinkField("password"), ...getPlayerFields(), getMapField(serverInfo["mapName"])]
+                        fields: [getServerLinkField(password), ...getPlayerFields(), getMapField(serverInfo["mapName"])]
                     }
                 })
             })

@@ -12,6 +12,11 @@ module.exports = {
             return
         }
 
+        if (gather.gatherInProgress()) {
+            message.channel.send("A gather is currently in progress.")
+            return
+        }
+
         const newSize = parseInt(args[0])
 
         if (newSize % 2 !== 0) {

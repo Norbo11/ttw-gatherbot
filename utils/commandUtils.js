@@ -4,27 +4,29 @@ const soldat = require("./soldat")
 
 
 displayGatherStatus = (message) => {
-    soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
+    soldat.getServerInfo(serverInfo => {
+        soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
-        let description = undefined;
+            let description = undefined;
 
-        if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
-            description = `**Gather Waiting for Reset**`
+            if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
+                description = `**Gather Waiting for Reset**`
 
-        } else if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
-            description = `**Gather In Progress**\n` +
-                `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
-                `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
-        }
-
-        message.channel.send({
-            embed: {
-                color: 0xff0000,
-                title: "Gather Info",
-                description: description,
-                fields: gather.getPlayerFields()
+            } else if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
+                description = `**Gather In Progress**\n` +
+                    `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
+                    `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
             }
-        });
+
+            message.channel.send({
+                embed: {
+                    color: 0xff0000,
+                    title: "Gather Info",
+                    description: description,
+                    fields: [...gather.getPlayerFields(), gather.getMapField(serverInfo["mapName"])]
+                }
+            });
+        })
     })
 }
 
@@ -94,7 +96,7 @@ displayQueueWithServerInfo = (message) => {
     })
 }
 
+
 module.exports = {
     displayGatherStatus, displayServerInfo, displayQueueWithServerInfo
 }
-
