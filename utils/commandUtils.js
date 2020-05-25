@@ -37,10 +37,10 @@ displayServerInfo = (message) => {
             const playerDeaths = serverInfo["deaths"][i]["playerDeaths"]
             const playerPing = serverInfo["pings"][i]["playerPing"]
 
-            if (playerTeam === 0) {
+            if (playerTeam === 1) {
                 alphaPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
-            if (playerTeam === 1) {
+            if (playerTeam === 2) {
                 bravoPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
         }
@@ -63,12 +63,12 @@ displayServerInfo = (message) => {
                     },
                     {
                         name: `Alpha Team`,
-                        value: alphaPlayerStrings.join("\n") ? alphaPlayerStrings.length > 0 : "No players",
+                        value: alphaPlayerStrings.length > 0 ? alphaPlayerStrings.join("\n") : "No players",
                         inline: true
                     },
                     {
                         name: `Bravo Team`,
-                        value: bravoPlayerStrings.join("\n") ? bravoPlayerStrings.length > 0 : "No players",
+                        value: bravoPlayerStrings.length > 0 ? bravoPlayerStrings.join("\n") : "No players",
                         inline: true
                     },
                 ]

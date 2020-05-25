@@ -39,10 +39,27 @@ displayQueue = (message, serverInfo) => {
 }
 
 getPlayerStrings = () => {
-    const alphaPlayersString = gatherState.alphaTeam.map(user => `<@${user.id}>`).join(" - ")
-    const bravoPlayersString = gatherState.bravoTeam.map(user => `<@${user.id}>`).join(" - ")
+    const alphaPlayersString = gatherState.alphaTeam.map(user => `<@${user.id}>`).join("\n")
+    const bravoPlayersString = gatherState.bravoTeam.map(user => `<@${user.id}>`).join("\n")
 
     return {alphaPlayersString, bravoPlayersString}
+}
+
+getPlayerFields = () => {
+    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
+
+    return [
+        {
+            name: `${discord.teamEmoji("Alpha")} Alpha Team`,
+            value: `${alphaPlayersString}`,
+            inline: true
+        },
+        {
+            name: `${discord.teamEmoji("Bravo")} Bravo Team`,
+            value: `${bravoPlayersString}`,
+            inline: true
+        }
+    ];
 }
 
 startGame = (message) => {
@@ -55,24 +72,11 @@ startGame = (message) => {
     gatherState.bravoTeam = bravoPlayers
     gatherState.gameInProgress = true
 
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
-
     message.channel.send({
         embed: {
             title: "Gather Info",
             color: 0xff0000,
-            fields: [
-                {
-                    name: "Alpha Team",
-                    value: `${discord.teamEmoji("Alpha")}: ${alphaPlayersString}`,
-                    inline: true
-                },
-                {
-                    name: "Bravo Team",
-                    value: `${discord.teamEmoji("Bravo")}: ${bravoPlayersString}`,
-                    inline: true
-                }
-            ]
+            fields: getPlayerFields()
         }
     })
 }
@@ -150,6 +154,6 @@ gatherUnpause = () => {
 }
 
 module.exports = {
-    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause, gatherStart
+    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause, gatherStart, getPlayerFields
 }
 

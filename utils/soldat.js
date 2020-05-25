@@ -94,7 +94,7 @@ const soldatRefreshxParser = new Parser()
     .array("kills", {
         length: 32,
         type: new Parser()
-            .uint16("playerKills")
+            .uint16le("playerKills")
     })
     .array("caps", {
         length: 32,
@@ -104,12 +104,12 @@ const soldatRefreshxParser = new Parser()
     .array("deaths", {
         length: 32,
         type: new Parser()
-            .uint16("playerDeaths")
+            .uint16le("playerDeaths")
     })
     .array("pings", {
         length: 32,
         type: new Parser()
-            .uint32("playerPing")
+            .uint32le("playerPing")
     })
     .array("ids", {
         length: 32,
@@ -119,17 +119,17 @@ const soldatRefreshxParser = new Parser()
     .array("ips", {
         length: 32,
         type: new Parser()
-            .int32("playerIp")
+            .int32le("playerIp")
     })
     .array("xLocations", {
         length: 32,
         type: new Parser()
-            .floatbe("playerX")
+            .floatle("playerX")
     })
     .array("yLocations", {
         length: 32,
         type: new Parser()
-            .floatbe("playerY")
+            .floatle("playerY")
     })
     .floatbe("redFlagXLocation")
     .floatbe("redFlagYLocation")
@@ -138,7 +138,7 @@ const soldatRefreshxParser = new Parser()
     .array("teamScores", {
         length: 4,
         type: new Parser()
-            .uint16("score")
+            .uint16le("score")
     })
     .seek(1)
     .string("mapName", {
@@ -187,7 +187,7 @@ getGatherStatus = (callback) => {
             return false
         }
 
-        if (parts[0] !== "status") {
+        if (parts[1] !== "status") {
             return false
         }
 
