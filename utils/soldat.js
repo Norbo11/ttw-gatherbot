@@ -14,8 +14,27 @@ const soldatClient = net.connect(constants.SERVER_PORT, constants.SERVER_IP, fun
     soldatEvents.registerSoldatEventListeners(soldatClient)
 })
 
+/* This is the single function that we should use to fetch data from the server. It attaches a temporary listener
+ * to the server socket, and awaits some user-specified condition to be true. It then calls a provided callback
+ * function with the fetched result and removes the temporary listener. If the condition isn't met within the
+ * specified timeout, the listener is also removed. The point of this is to "actively" listen for some data to come
+ * back from the server when a particular command is being performed, such as changing the map, but only for a short
+ * period of time. This differs from "passive" listeners defined inside soldatEvent.js that continuously listen to
+ * events, such as gather end, caps, etc.
+ *
+ * @param processData: A function that receives data from the server and returns some result, or false if the data
+ * we wanted wasn't found.
+ *
+ * @param callback: A function that gets called with the resulting data once it's found.
+ *
+ * @param raw: If true, will pass raw bytes as received by the server. Otherwise will convert raw bytes into string
+ * format first.
+ *
+ * @param timeout: How long should we wait for the server to send the data we want, as defined by the processData
+ * function. Defaults to 7 seconds.
+ */
 listenForServerResponse = (processData, callback = () => {
-}, raw = false) => {
+}, raw = false, timeout = 7000) => {
     const listener = (data) => {
         if (!raw) {
             data = data.toString()
@@ -36,12 +55,15 @@ listenForServerResponse = (processData, callback = () => {
 
     soldatClient.addListener("data", listener)
 
+    // TODO: Currently this removal happens even if the data is found. That's okay for now.
     setTimeout(() => {
-        logger.log.info("7 seconds have passed, removing listener.")
+        logger.log.info(`${timeout}ms has passed, removing listener.`)
         soldatClient.removeListener("data", listener)
-    }, 7000)
+    }, timeout)
 }
 
+
+// This is a parser used to parse the output of the REFRESHX command: https://wiki.soldat.pl/index.php/Refreshx
 const soldatRefreshxParser = new Parser()
     .string("refreshx", {
         length: 10,
@@ -162,7 +184,11 @@ getGatherStatus = (callback) => {
         const parts = text.split(" ")
 
         if (parts[0] !== "---") {
-            return false;
+            return false
+        }
+
+        if (parts[0] !== "status") {
+            return false
         }
 
         const alphaTickets = parseInt(parts[2])
