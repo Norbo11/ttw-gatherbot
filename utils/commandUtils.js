@@ -5,27 +5,16 @@ const soldat = require("./soldat")
 
 displayGatherStatus = (message) => {
     soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
-        // TODO: This might need different logic
-
-        if (alphaTickets === 500 && bravoTickets === 500 && alphaCaps === 0 && bravoCaps === 0) {
-            message.channel.send({
-                embed: {
-                    color: 0xff0000,
-                    description: "No gather in progress!",
-                }
-            });
-        } else {
-            message.channel.send({
-                embed: {
-                    color: 0xff0000,
-                    title: "Gather Info",
-                    description: `**Gather In Progress**\n` +
-                        `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
-                        `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`,
-                    fields: gather.getPlayerFields()
-                }
-            });
-        }
+        message.channel.send({
+            embed: {
+                color: 0xff0000,
+                title: "Gather Info",
+                description: `**Gather In Progress**\n` +
+                    `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
+                    `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`,
+                fields: gather.getPlayerFields()
+            }
+        });
     })
 }
 
@@ -45,12 +34,14 @@ displayServerInfo = (message) => {
             const playerName = serverInfo["names"][i]["playerName"]
             const playerTeam = serverInfo["teams"][i]["playerTeam"]
             const playerKills = serverInfo["kills"][i]["playerKills"]
+            const playerDeaths = serverInfo["deaths"][i]["playerDeaths"]
+            const playerPing = serverInfo["pings"][i]["playerPing"]
 
             if (playerTeam === 0) {
-                alphaPlayerStrings.push(`${playerName}: ${playerKills} kills`)
+                alphaPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
             if (playerTeam === 1) {
-                bravoPlayerStrings.push(`${playerName}: ${playerKills} kills`)
+                bravoPlayerStrings.push(`${playerName} (${playerPing}ms): ${playerKills}/${playerDeaths}`)
             }
         }
 
