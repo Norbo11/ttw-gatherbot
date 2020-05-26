@@ -6,16 +6,16 @@ const constants = require("../constants")
 const random = require("./random")
 
 MAPS_LIST = [
-    "ttw_42ndWood.pms", "ttw_Borderwars.pms", "ttw_Concrete.pms", "ttw_Forgotten.pms", "ttw_Junkyard.pms", "ttw_Mudder.pms", "ttw_rime.pms", "ttw_Take.pms", "ttw_Village.pms",
-    "ttw_Afrique.pms", "ttw_Bridge.pms", "ttw_crater.pms", "ttw_Fort.pms", "ttw_kaibatsu.pms", "ttw_Myst2.pms", "ttw_Rime.pms", "ttw_Tenshin2.pms", "ttw_Waste.pms",
-    "ttw_afterGlory.pms", "ttw_cadet.pms", "ttw_crecent.pms", "ttw_fortress.pms", "ttw_kamiquasi.pms", "ttw_Myst.pms", "ttw_Tenshin.pms", "ttw_WIP.pms",
-    "ttw_Alize.pms", "ttw_Caen.pms", "ttw_Creek.pms", "ttw_Frostbite.pms", "ttw_Kampfer.pms", "ttw_NewNature.pms", "ttw_rover.pms", "ttw_Teroya.pms", "ttw_Ypres-fix.pms",
-    "ttw_alphathing.pms", "ttw_Cangaceiros.pms", "ttw_crimson.pms", "ttw_frost.pms", "ttw_Krath.pms", "ttw_Nomans.pms", "ttw_shaft.pms", "ttw_tower.pms",
-    "ttw_Anoxi.pms", "ttw_cannibals.pms", "ttw_Dawn.pms", "ttw_generic.pms", "ttw_Limbo.pms", "ttw_nworld.pms", "ttw_Skybridge.pms", "ttw_Toxic.pms",
-    "ttw_art.pms", "ttw_castle.pms", "ttw_desert.pms", "ttw_Gloryhill.pms", "ttw_marsh.pms", "ttw_paperwar.pms", "ttw_Skyscrapers.pms", "ttw_Trainyards.pms", "ttw_Ypres_n.pms",
-    "ttw_Autumn.pms", "ttw_Cathedral.pms", "ttw_Drain.pms", "ttw_Grasshill.pms", "ttw_meteorite.pms", "ttw_Pinewood.pms", "ttw_SoldiersFoly.pms", "ttw_Untitled3.pms", "ttw_Ypres.pms",
-    "ttw_Bachvu.pms", "ttw_ColdMorning.pms", "ttw_El_Alamein.pms", "ttw_hue.pms", "ttw_Mound", "Kopia.pms", "ttw_Plat.pms", "ttw_storm.pms", "ttw_Valley.pms",
-    "ttw_BattleField.pms", "ttw_ColdMorning.PMS.old", "ttw_Forest.pms", "ttw_Junkyard2.pms", "ttw_Mound.pms", "ttw_Rage.pms", "ttw_Struggle.pms", "ttw_Verdun.pms"
+    "ttw_42ndWood", "ttw_Borderwars", "ttw_Concrete", "ttw_Forgotten", "ttw_Junkyard", "ttw_Mudder", "ttw_rime", "ttw_Take", "ttw_Village",
+    "ttw_Afrique", "ttw_Bridge", "ttw_crater", "ttw_Fort", "ttw_kaibatsu", "ttw_Myst2", "ttw_Rime", "ttw_Tenshin2", "ttw_Waste",
+    "ttw_afterGlory", "ttw_cadet", "ttw_crecent", "ttw_fortress", "ttw_kamiquasi", "ttw_Myst", "ttw_Tenshin", "ttw_WIP",
+    "ttw_Alize", "ttw_Caen", "ttw_Creek", "ttw_Frostbite", "ttw_Kampfer", "ttw_NewNature", "ttw_rover", "ttw_Teroya", "ttw_Ypres-fix",
+    "ttw_alphathing", "ttw_Cangaceiros", "ttw_crimson", "ttw_frost", "ttw_Krath", "ttw_Nomans", "ttw_shaft", "ttw_tower",
+    "ttw_Anoxi", "ttw_cannibals", "ttw_Dawn", "ttw_generic", "ttw_Limbo", "ttw_nworld", "ttw_Skybridge", "ttw_Toxic",
+    "ttw_art", "ttw_castle", "ttw_desert", "ttw_Gloryhill", "ttw_marsh", "ttw_paperwar", "ttw_Skyscrapers", "ttw_Trainyards", "ttw_Ypres_n",
+    "ttw_Autumn", "ttw_Cathedral", "ttw_Drain", "ttw_Grasshill", "ttw_meteorite", "ttw_Pinewood", "ttw_SoldiersFoly", "ttw_Untitled3", "ttw_Ypres",
+    "ttw_Bachvu", "ttw_ColdMorning", "ttw_El_Alamein", "ttw_hue", "ttw_Mound", "Kopia", "ttw_Plat", "ttw_storm", "ttw_Valley",
+    "ttw_BattleField", "ttw_ColdMorning.old", "ttw_Forest", "ttw_Junkyard2", "ttw_Mound", "ttw_Rage", "ttw_Struggle", "ttw_Verdun"
 ]
 
 
