@@ -150,6 +150,7 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
     gatherState.currentQueue = []
 
     soldat.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
+    soldat.setServerPassword("")
 
     discord.discordState.discordChannel.send({
         embed: {
