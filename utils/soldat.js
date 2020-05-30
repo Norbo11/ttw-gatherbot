@@ -44,10 +44,10 @@ listenForServerResponse = (processData,
     const listener = (data) => {
         if (!raw) {
             data = data.toString()
-            logger.log.info(`Received active raw event from server: ${data.trim()}`)
+            logger.log.info(`Received active event from server: ${data.trim()}`)
+        } else {
+            logger.log.info(`Received active raw event from server: ${data}`)
         }
-
-        logger.log.info(`Received active event from server: ${data}`)
 
         const result = processData(data)
 
