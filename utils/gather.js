@@ -103,16 +103,16 @@ startGame = (message) => {
     const alphaPlayers = _.slice(shuffledQueue, 0, gatherState.currentSize / 2)
     const bravoPlayers = _.slice(shuffledQueue, gatherState.currentSize / 2, gatherState.currentSize)
 
+    const password = Math.random().toString(36).substring(7);
+
     gatherState.alphaTeam = alphaPlayers
     gatherState.bravoTeam = bravoPlayers
     gatherState.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
-    const password = Math.random().toString(36).substring(7);
-
     soldat.setServerPassword(password, () => {
-        soldat.getServerInfo(serverInfo => {
-            console.log(serverInfo["mapName"])
+        gatherState.serverPassword = password
 
+        soldat.getServerInfo(serverInfo => {
             shuffledQueue.forEach(user => {
                 user.send({
                     embed: {
@@ -151,6 +151,8 @@ endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
     soldat.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
     soldat.setServerPassword("")
+
+    gatherState.serverPassword = ""
 
     discord.discordState.discordChannel.send({
         embed: {
