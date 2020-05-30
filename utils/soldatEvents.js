@@ -8,9 +8,13 @@ registerSoldatEventListeners = (soldatClient) => {
     soldatClient.addListener("data", function (data) {
         const text = data.toString();
 
+        if (!gather.gatherInProgress()) {
+            return
+        }
+
         // TODO: Server keeps spamming these messages, should probably silence them
         if (text.startsWith("--- hwid")) {
-            return;
+            return
         }
 
         let eventText = undefined
@@ -35,17 +39,13 @@ registerSoldatEventListeners = (soldatClient) => {
 
         match = text.match(/--- gatherpause/)
         if (match !== null) {
-            if (gather.gatherInProgress()) {
-                gather.gatherPause()
-            }
+            gather.gatherPause()
             eventText = text
         }
 
         match = text.match(/--- gatherunpause/)
         if (match !== null) {
-            if (gather.gatherInProgress()) {
-                gather.gatherUnpause()
-            }
+            gather.gatherUnpause()
             eventText = text
         }
 
