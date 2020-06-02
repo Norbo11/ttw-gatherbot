@@ -1,7 +1,6 @@
 const _ = require("lodash")
 const logger = require("./logger")
 const discord = require("./discord")
-const soldat = require("./soldat")
 const constants = require("../constants")
 const random = require("./random")
 
@@ -25,196 +24,314 @@ IN_GAME_STATES = {
     "GATHER_STARTED": "GATHER_STARTED",
 }
 
-
-gatherState = {
-    currentSize: 6,
-    currentQueue: [],
-    alphaTeam: [],
-    bravoTeam: [],
-    inGameState: IN_GAME_STATES["NO_GATHER"]
+const TTW_CLASSES = {
+    GENERAL: {
+        name: "GENERAL",
+        aliases: ["GENERAL", "GEN"]
+    },
+    RADIOMAN: {
+        name: "RADIOMAN",
+        aliases: ["RADIOMAN", "RAD"]
+    },
+    SABOTEUR: {
+        name: "SABOTEUR",
+        aliases: ["SABOTEUR", "SABO"]
+    },
+    LONG_RANGE_INFANTRY: {
+        name: "LONG_RANGE_INFANTRY",
+        aliases: ["LRI"]
+    },
+    SHORT_RANGE_INFANTRY: {
+        name: "SHORT_RANGE_INFANTRY",
+        aliases: ["SRI"]
+    },
+    SPY: {
+        name: "SPY",
+        aliases: ["SPY"]
+    },
+    ELITE: {
+        name: "ELITE",
+        aliases: ["ELITE"]
+    },
+    ARTILLERY: {
+        name: "ARTILLERY",
+        aliases: ["ARTILLERY", "ART"]
+    },
+    ENGINEER: {
+        name: "ENGINEER",
+        aliases: ["ENGINEER", "ENG"]
+    }
 }
 
-getPlayerStrings = (delim = "\n") => {
-    const alphaPlayersString = gatherState.alphaTeam.length > 0 ? gatherState.alphaTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
-    const bravoPlayersString = gatherState.bravoTeam.length > 0 ? gatherState.bravoTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
-
-    return {alphaPlayersString, bravoPlayersString}
+const TTW_EVENTS = {
+    PLAYER_CLASS_SWITCH: "PLAYER_CLASS_SWITCH",
+    FLAG_CAP: "FLAG_CAP",
+    GATHER_PAUSE: "GATHER_PAUSE",
+    GATHER_UNPAUSE: "GATHER_UNPAUSE",
+    BUNKER_CONQUER: "BUNKER_CONQUER"
+    PLAYER_KILL: "PLAYER_KILL"
 }
 
-getPlayerFields = () => {
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings()
+class Gather {
 
-    return [
-        {
-            name: `${discord.teamEmoji("Alpha")} Alpha Team`,
-            value: `${alphaPlayersString}`,
-            inline: true
-        },
-        {
-            name: `${discord.teamEmoji("Bravo")} Bravo Team`,
-            value: `${bravoPlayersString}`,
-            inline: true
+    currentSize = 6
+    currentQueue = []
+    alphaTeam = []
+    bravoTeam = []
+    inGameState = IN_GAME_STATES["NO_GATHER"]
+    numberOfBunkers = 0
+    serverPassword = undefined
+    events = []
+    startTime = undefined
+    endTime = undefined
+    currentGeneral = undefined
+    currentRadioman = undefined
+
+    constructor(soldatClient, discordChannel) {
+        this.soldatClient = soldatClient
+        this.discordChannel = discordChannel
+    }
+
+    getPlayerStrings(delim = "\n") {
+        const alphaPlayersString = this.alphaTeam.length > 0 ? this.alphaTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
+        const bravoPlayersString = this.bravoTeam.length > 0 ? this.bravoTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
+
+        return {alphaPlayersString, bravoPlayersString}
+    }
+
+    getPlayerFields() {
+        const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings()
+
+        return [
+            {
+                name: `${discord.teamEmoji("Alpha")} Alpha Team`,
+                value: `${alphaPlayersString}`,
+                inline: true
+            },
+            {
+                name: `${discord.teamEmoji("Bravo")} Bravo Team`,
+                value: `${bravoPlayersString}`,
+                inline: true
+            }
+        ];
+    }
+
+    getMapField(mapName) {
+        return {
+            name: "Map",
+            value: `${mapName}`,
         }
-    ];
-}
-
-getMapField = (mapName) => {
-    return {
-        name: "Map",
-        value: `${mapName}`,
-    }
-}
-
-getServerLinkField = (password = "goaway") => {
-    return {
-        name: "Link",
-        value: `soldat://${constants.SERVER_IP}:${constants.SERVER_PORT}/${password}`,
-    }
-}
-
-gatherInProgress = () => {
-    return gatherState.inGameState !== IN_GAME_STATES["NO_GATHER"]
-}
-
-displayQueue = (message, serverInfo) => {
-    const queueMembers = gatherState.currentQueue.map(user => `<@${user.id}>`)
-    for (let i = 0; i < gatherState.currentSize - gatherState.currentQueue.length; i++) {
-        queueMembers.push(":bust_in_silhouette:")
     }
 
-    message.channel.send({
-        embed: {
-            title: "Gather Info",
-            color: 0xff0000,
-            fields: [
-                {
-                    name: "Current Queue",
-                    value: `${queueMembers.join(" - ")}`
-                },
-                getMapField(serverInfo["mapName"])
-            ]
+    getServerLinkField(password = "goaway") {
+        return {
+            name: "Link",
+            value: `soldat://${constants.SERVER_IP}:${constants.SERVER_PORT}/${password}`,
         }
-    })
-}
+    }
 
-startGame = (message) => {
-    const shuffledQueue = _.shuffle(gatherState.currentQueue)
+    gatherInProgress() {
+        return this.inGameState !== IN_GAME_STATES["NO_GATHER"]
+    }
 
-    const alphaPlayers = _.slice(shuffledQueue, 0, gatherState.currentSize / 2)
-    const bravoPlayers = _.slice(shuffledQueue, gatherState.currentSize / 2, gatherState.currentSize)
+    displayQueue(serverInfo) {
+        const queueMembers = this.currentQueue.map(user => `<@${user.id}>`)
+        for (let i = 0; i < this.currentSize - this.currentQueue.length; i++) {
+            queueMembers.push(":bust_in_silhouette:")
+        }
 
-    const password = Math.random().toString(36).substring(7);
+        this.discordChannel.send({
+            embed: {
+                title: "Gather Info",
+                color: 0xff0000,
+                fields: [
+                    {
+                        name: "Current Queue",
+                        value: `${queueMembers.join(" - ")}`
+                    },
+                    this.getMapField(serverInfo["mapName"])
+                ]
+            }
+        })
+    }
 
-    gatherState.alphaTeam = alphaPlayers
-    gatherState.bravoTeam = bravoPlayers
-    gatherState.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
+    startGame() {
+        const shuffledQueue = _.shuffle(this.currentQueue)
 
-    soldat.setServerPassword(password, () => {
-        gatherState.serverPassword = password
+        const alphaPlayers = _.slice(shuffledQueue, 0, this.currentSize / 2)
+        const bravoPlayers = _.slice(shuffledQueue, this.currentSize / 2, this.currentSize)
 
-        soldat.getServerInfo(serverInfo => {
-            shuffledQueue.forEach(user => {
-                user.send({
+        const password = Math.random().toString(36).substring(7);
+
+        this.alphaTeam = alphaPlayers
+        this.bravoTeam = bravoPlayers
+        this.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
+
+        this.soldatClient.setServerPassword(password, () => {
+            this.serverPassword = password
+
+            this.soldatClient.getServerInfo(serverInfo => {
+                shuffledQueue.forEach(user => {
+                    user.send({
+                        embed: {
+                            title: "Gather Started",
+                            color: 0xff0000,
+                            fields: [
+                                this.getServerLinkField(password),
+                                ...this.getPlayerFields(),
+                                this.getMapField(serverInfo["mapName"])
+                            ]
+                        }
+                    })
+                })
+
+                this.discordChannel.send({
                     embed: {
                         title: "Gather Started",
                         color: 0xff0000,
-                        fields: [getServerLinkField(password), ...getPlayerFields(), getMapField(serverInfo["mapName"])]
+                        fields: [
+                            ...this.getPlayerFields(),
+                            this.getMapField(serverInfo["mapName"])
+                        ]
                     }
                 })
             })
-
-            message.channel.send({
-                embed: {
-                    title: "Gather Started",
-                    color: 0xff0000,
-                    fields: [...getPlayerFields(), getMapField(serverInfo["mapName"])]
-                }
-            })
         })
-    })
-}
+    }
 
-endGame = (alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings(" - ")
+    endGame(alphaTickets, bravoTickets, alphaCaps, bravoCaps) {
+        this.endTime = Date.now()
 
-    const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
-    const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
-    const winnerTickets = alphaTickets > bravoTickets ? alphaTickets : bravoTickets
-    const loserTickets = alphaTickets > bravoTickets ? bravoTickets : alphaTickets
-    const winnerCaps = alphaTickets > bravoTickets ? alphaCaps : bravoCaps
-    const loserCaps = alphaTickets > bravoTickets ? bravoCaps : alphaCaps
-    const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
-    const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
+        const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings(" - ")
 
-    gatherState.inGameState = IN_GAME_STATES["NO_GATHER"]
-    gatherState.currentQueue = []
+        const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
+        const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
+        const winnerTickets = alphaTickets > bravoTickets ? alphaTickets : bravoTickets
+        const loserTickets = alphaTickets > bravoTickets ? bravoTickets : alphaTickets
+        const winnerCaps = alphaTickets > bravoTickets ? alphaCaps : bravoCaps
+        const loserCaps = alphaTickets > bravoTickets ? bravoCaps : alphaCaps
+        const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
+        const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
 
-    soldat.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
-    soldat.setServerPassword("")
+        this.inGameState = IN_GAME_STATES["NO_GATHER"]
+        this.currentQueue = []
 
-    gatherState.serverPassword = ""
+        this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
+        this.soldatClient.setServerPassword("")
 
-    discord.discordState.discordChannel.send({
-        embed: {
-            title: "Gather Finished",
-            color: 0xff0000,
-            fields: [
-                {
-                    name: `**Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
-                    value: `${discord.teamEmoji(winningTeam)}: ${winningPlayersString}`,
-                },
-                {
-                    name: `Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
-                    value: `${discord.teamEmoji(losingTeam)}: ${losingPlayersString}`,
-                },
-            ]
+        this.serverPassword = ""
+
+        this.discordChannel.send({
+            embed: {
+                title: "Gather Finished",
+                color: 0xff0000,
+                fields: [
+                    {
+                        name: `**Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
+                        value: `${discord.teamEmoji(winningTeam)}: ${winningPlayersString}`,
+                    },
+                    {
+                        name: `Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
+                        value: `${discord.teamEmoji(losingTeam)}: ${losingPlayersString}`,
+                    },
+                ]
+            }
+        })
+    }
+
+    gatherStart(mapName, size, numberOfBunkers) {
+        this.inGameState = IN_GAME_STATES["GATHER_STARTED"]
+        this.numberOfBunkers = numberOfBunkers
+        this.startTime = Date.now()
+
+        this.discordChannel.send({
+            embed: {
+                title: "Gather Started",
+                color: 0xff0000,
+                description: `Size ${size} gather started on **${mapName}**. GLHF!`
+            }
+        })
+    }
+
+    flagCap(playerName, teamName) {
+        this.pushEvent(TTW_EVENTS.FLAG_CAP, {
+            playerName, teamName
+        })
+
+        this.discordChannel.send({
+            embed: {
+                title: `${teamName} cap`,
+                color: 0xff0000,
+                description: `**${playerName}** scored for the **${teamName}** team!`
+            }
+        })
+    }
+
+    gatherPause() {
+        this.pushEvent(TTW_EVENTS.GATHER_PAUSE)
+
+        this.discordChannel.send({
+            embed: {
+                title: `Gather Paused`,
+                color: 0xff0000,
+            }
+        })
+    }
+
+    gatherUnpause() {
+        this.pushEvent(TTW_EVENTS.GATHER_UNPAUSE)
+
+        this.discordChannel.send({
+            embed: {
+                title: `Gather Unpaused`,
+                color: 0xff0000,
+                description: "GO GO GO"
+            }
+        })
+    }
+
+    pushEvent(eventType, eventBody = {}) {
+        this.events.push({
+            type: eventType,
+            timestamp: Date.now(),
+            ...eventBody
+        })
+    }
+
+    playerCommand(playerName, currentClass, command) {
+        const matchingClass = _.find(TTW_CLASSES, (ttwClass) => ttwClass.aliases.includes(command.toUpperCase()))
+
+        if (matchingClass !== undefined) {
+            this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
+                playerName,
+                oldClass: currentClass,
+                newClass: matchingClass.name,
+            })
+
+            if (matchingClass === TTW_CLASSES.GENERAL) {
+                this.currentGeneral = playerName
+            }
+
+            if (matchingClass === TTW_CLASSES.RADIOMAN) {
+                this.currentRadioman = playerName
+            }
         }
-    })
-}
+    }
 
-gatherStart = (mapName, size) => {
-    gatherState.inGameState = IN_GAME_STATES["GATHER_STARTED"]
-
-    discord.discordState.discordChannel.send({
-        embed: {
-            title: "Gather Started",
-            color: 0xff0000,
-            description: `Size ${size} gather started on **${mapName}**. GLHF!`
-        }
-    })
-}
-
-flagCap = (playerName, teamName) => {
-    discord.discordState.discordChannel.send({
-        embed: {
-            title: `${teamName} cap`,
-            color: 0xff0000,
-            description: `**${playerName}** scored for the **${teamName}** team!`
-        }
-    })
-}
-
-gatherPause = () => {
-    discord.discordState.discordChannel.send({
-        embed: {
-            title: `Gather Paused`,
-            color: 0xff0000,
-        }
-    })
-}
-
-gatherUnpause = () => {
-    discord.discordState.discordChannel.send({
-        embed: {
-            title: `Gather Unpaused`,
-            color: 0xff0000,
-            description: "GO GO GO"
-        }
-    })
+    conquer(conqueringTeam, alphaTickets, bravoTickets, currentAlphaBunker, currentBravoBunker, sabotaging) {
+        this.pushEvent(TTW_EVENTS.BUNKER_CONQUER, {
+            playerName: this.currentGeneral,
+            conqueringTeam,
+            alphaTickets,
+            bravoTickets,
+            currentAlphaBunker,
+            currentBravoBunker,
+            sabotaging
+        })
+    }
 }
 
 module.exports = {
-    gatherState, gatherInProgress, startGame, displayQueue, endGame, flagCap, gatherPause, gatherUnpause,
-    gatherStart, getPlayerFields, IN_GAME_STATES, getServerLinkField, getMapField
+    Gather, IN_GAME_STATES, TTW_CLASSES, TTW_EVENTS
 }
 

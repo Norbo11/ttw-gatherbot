@@ -1,18 +1,16 @@
-const gather = require("./gather")
 const logger = require("./logger")
-const soldat = require("./soldat")
 
 
 displayGatherStatus = (message) => {
-    soldat.getServerInfo(serverInfo => {
-        soldat.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
+    soldatClient.getServerInfo(serverInfo => {
+        soldatClient.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
             let description = undefined;
 
-            if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
+            if (currentGather.inGameState === currentGather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
                 description = `**Gather Waiting for Reset**`
 
-            } else if (gather.gatherState.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
+            } else if (currentGather.inGameState === currentGather.IN_GAME_STATES["GATHER_STARTED"]) {
                 description = `**Gather In Progress**\n` +
                     `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
                     `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
@@ -23,7 +21,7 @@ displayGatherStatus = (message) => {
                     color: 0xff0000,
                     title: "Gather Info",
                     description: description,
-                    fields: [...gather.getPlayerFields(), gather.getMapField(serverInfo["mapName"])]
+                    fields: [...currentGather.getPlayerFields(), currentGather.getMapField(serverInfo["mapName"])]
                 }
             });
         })
@@ -32,7 +30,7 @@ displayGatherStatus = (message) => {
 
 
 displayServerInfo = (message) => {
-    soldat.getServerInfo(serverInfo => {
+    soldatClient.getServerInfo(serverInfo => {
         const alphaPlayerStrings = []
         const bravoPlayerStrings = []
 
@@ -91,8 +89,8 @@ displayServerInfo = (message) => {
 
 
 displayQueueWithServerInfo = (message) => {
-    soldat.getServerInfo(serverInfo => {
-        gather.displayQueue(message, serverInfo)
+    soldatClient.getServerInfo(serverInfo => {
+        currentGather.displayQueue(serverInfo)
     })
 }
 

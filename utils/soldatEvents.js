@@ -1,11 +1,11 @@
-const gather = require("./gather")
 const logger = require("./logger")
+const soldat = require("./soldat")
 
 
-registerSoldatEventListeners = (soldatClient) => {
+registerSoldatEventListeners = (gather, netClient) => {
     logger.log.info("Registered non-command event listeners.")
 
-    soldatClient.addListener("data", function (data) {
+    netClient.addListener("data", function (data) {
         const text = data.toString();
 
         if (!gather.gatherInProgress()) {
@@ -25,9 +25,9 @@ registerSoldatEventListeners = (soldatClient) => {
             eventText = text
         }
 
-        match = text.match(/--- gatherstart (?<mapName>.*?) (?<gatherSize>\d*)/)
+        match = text.match(/--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/)
         if (match !== null) {
-            gather.gatherStart(match.groups["mapName"], gather.gatherState.currentSize)
+            gather.gatherStart(match.groups["mapName"], gather.currentSize, parseInt(match.groups["numberOfBunkers"]))
             eventText = text
         }
 
@@ -46,6 +46,26 @@ registerSoldatEventListeners = (soldatClient) => {
         match = text.match(/--- gatherunpause/)
         if (match !== null) {
             gather.gatherUnpause()
+            eventText = text
+        }
+
+        match = text.match(/\[CMD\] (?<currentClass>.*?) \((?<playerName>.*?)\): \/(?<command>.*)/)
+        if (match !== null) {
+            gather.playerCommand(match.groups["playerName"], match.groups["currentClass"], match.groups["command"])
+            eventText = text
+        }
+
+        match = text.match(/(2) <?<killPlayer> killed (1) SethGecko with Ak-74/)
+
+        match = text.match(/--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/)
+        if (match !== null) {
+            gather.conquer(
+                soldat.TEAMS[parseInt(match.groups["conqueringTeam"])],
+                parseInt(match.groups["alphaTickets"]),
+                parseInt(match.groups["bravoTickets"]),
+                parseInt(match.groups["currentAlphaBunker"]),
+                parseInt(match.groups["currentBravoBunker"]),
+                match.groups["sabotaging"] !== "0")
             eventText = text
         }
 

@@ -1,4 +1,3 @@
-const soldat = require("../utils/soldat")
 const logger = require("../utils/logger")
 
 
@@ -13,7 +12,7 @@ module.exports = {
 
         message.channel.send("Changing map, hang on...")
 
-        soldat.changeMap(args[0], (mapChangeResult) => {
+        soldatClient.changeMap(args[0], (mapChangeResult) => {
             if (mapChangeResult === "found") {
                 message.channel.send({
                     embed: {

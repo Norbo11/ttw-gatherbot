@@ -1,9 +1,5 @@
 const logger = require("./logger")
 
-discordState = {
-    discordChannel: undefined,
-}
-
 teamEmoji = (teamName) => {
     if (teamName === "Alpha") {
         return ":a:"
@@ -16,5 +12,5 @@ teamEmoji = (teamName) => {
 }
 
 module.exports = {
-    discordState, teamEmoji
+    teamEmoji
 }

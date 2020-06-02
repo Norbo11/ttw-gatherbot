@@ -1,5 +1,3 @@
-const gather = require("../utils/gather.js")
-const soldat = require("../utils/soldat")
 const logger = require("../utils/logger")
 const utils = require("../utils/commandUtils")
 
@@ -8,11 +6,11 @@ module.exports = {
     description: "Get or set the gather size.",
     execute(client, message, args) {
         if (args.length === 0) {
-            message.channel.send(`The current gather size is ${gather.gatherState.currentSize}`)
+            message.channel.send(`The current gather size is ${currentGather.currentSize}`)
             return
         }
 
-        if (gather.gatherInProgress()) {
+        if (currentGather.gatherInProgress()) {
             message.channel.send("A gather is currently in progress.")
             return
         }
@@ -26,19 +24,8 @@ module.exports = {
 
         message.channel.send("Changing size, hang on...")
 
-        soldat.listenForServerResponse(text => {
-            if (text.match(/Initializing bunkers/)) {
-                gather.gatherState.currentSize = newSize
-                gather.gatherState.currentQueue = []
-                return true;
-            }
-            return false;
-        }, () => {
+        soldatClient.changeGatherSize(currentGather, newSize, () => {
             utils.displayQueueWithServerInfo(message)
         })
-
-        soldat.soldatClient.write(`/gathersize ${newSize}\n`);
-        soldat.soldatClient.write("/restart\n");
-        soldat.soldatClient.write(`/say Gather size set to ${newSize}\n`);
     },
 };

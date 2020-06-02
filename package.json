@@ -1,40 +1,38 @@
 {
-    "name": "Discord-PUG-Bot",
+    "name": "TTW-Gatherbot",
     "version": "1.0.0",
-    "description": "A Discord bot for organising Pickup Games. Aimed at Rocket League and written for use on discord.gg/rlo",
+    "description": "A Discord bot for organising Soldat TTW gather games.",
     "keywords": [
         "discord",
-        "bot",
-        "pug",
-        "rlo"
+        "bot"
     ],
-    "homepage": "https://github.com/BeatnikAU/Discord-PUG-Bot/",
-    "bugs": "https://github.com/BeatnikAU/Discord-PUG-Bot/issues/",
     "private": true,
-    "author": "BeatnikAU (https://github.com/BeatnikAU/)",
+    "author": "Norbo11",
     "contributors": [
-        "Arcadeena <arcadeena@gmail.com> (https://github.com/arcadeena/)"
+        "Norbert Podsadowski <norbo11@gmail.com> (https://github.com/Norbo11/)"
     ],
-    "main": "src/index.js",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/BeatnikAU/Discord-PUG-Bot.git"
-    },
+    "main": "index.js",
     "dependencies": {
+        "binary-parser": "1.6.2",
         "discord.js": "11.0.0",
-        "lodash": "4.17.15",
         "dotenv": "8.2.0",
+        "lodash": "4.17.15",
+        "mongodb": "3.5.7",
+        "npm": "^6.14.5",
         "pino": "6.2.1",
-        "pino-pretty": "4.0.0",
-        "binary-parser": "1.6.2"
+        "pino-pretty": "4.0.0"
     },
     "devDependencies": {
-        "mocha": "7.2.0"
+        "mocha": "7.2.0",
+        "chai": "4.2.0",
+        "chai-subset": "1.6.0",
+        "sinon": "9.0.2"
     },
     "engines": {
-        "node": ">=6.0.0"
+        "node": ">=14.0.0"
     },
     "scripts": {
-        "start": "node src/index.js"
+        "start": "node index.js",
+        "test": "mocha"
     }
 }

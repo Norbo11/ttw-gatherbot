@@ -1,5 +1,4 @@
 const logger = require("../utils/logger")
-const gather = require("../utils/gather")
 
 module.exports = {
     aliases: ["server"],
@@ -9,7 +8,7 @@ module.exports = {
             embed: {
                 title: "Server Info",
                 color: 0xff0000,
-                fields: [gather.getServerLinkField()]
+                fields: [currentGather.getServerLinkField()]
             },
         }).catch((e) => console.error(e.response.body))
     },
