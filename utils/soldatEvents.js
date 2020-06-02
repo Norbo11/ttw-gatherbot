@@ -55,7 +55,18 @@ registerSoldatEventListeners = (gather, netClient) => {
             eventText = text
         }
 
-        match = text.match(/(2) <?<killPlayer> killed (1) SethGecko with Ak-74/)
+        match = text.match(/\((?<killerTeam>.*?)\) (?<killerName>.*?) killed \((?<victimTeam>.*?)\) (?<victimName>.*?) with (?<weapon>.*)/)
+        if (match !== null) {
+            gather.playerKill(
+                soldat.TEAMS[parseInt(match.groups["killerTeam"])],
+                match.groups["killerName"],
+                soldat.TEAMS[parseInt(match.groups["victimTeam"])],
+                match.groups["victimName"],
+                match.groups["weapon"]
+            )
+            eventText = text
+        }
+
 
         match = text.match(/--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/)
         if (match !== null) {

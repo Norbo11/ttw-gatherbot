@@ -184,9 +184,11 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
             "type": TTW_EVENTS.PLAYER_KILL,
-            "killPlayer": "[WP] NamelessWolf",
-            "deathPlayer": "SethGecko",
-            "weapon": "Ak-47",
+            "killerTeam": "Bravo",
+            "killerName": "[WP] NamelessWolf",
+            "victimTeam": "Alpha",
+            "victimName": "SethGecko",
+            "weapon": "Ak-74",
         })
     });
 });

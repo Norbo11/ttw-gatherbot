@@ -329,6 +329,12 @@ class Gather {
             sabotaging
         })
     }
+
+    playerKill(killerTeam, killerName, victimTeam, victimName, weapon) {
+        this.pushEvent(TTW_EVENTS.PLAYER_KILL, {
+            killerTeam, killerName, victimTeam, victimName, weapon
+        })
+    }
 }
 
 module.exports = {
