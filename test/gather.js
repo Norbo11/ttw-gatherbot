@@ -42,7 +42,7 @@ describe('Gather', () => {
         soldatClient = new soldat.SoldatClient(netClient)
         currentGather = new gather.Gather(soldatClient, discordChannel)
         soldatEvents.registerSoldatEventListeners(currentGather, netClient)
-    })
+    });
 
     it('should handle gather beginnings and endings', async () => {
         expect(currentGather.inGameState).equal(gather.IN_GAME_STATES["NO_GATHER"])
@@ -189,4 +189,4 @@ describe('Gather', () => {
             "weapon": "Ak-47",
         })
     });
-);
+});
