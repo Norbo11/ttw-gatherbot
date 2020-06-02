@@ -76,6 +76,7 @@ getPlayerStats = async (statsDb, discordId) => {
     let lostGames = 0
     let totalKills = 0
     let totalDeaths = 0
+    let totalGatherTime = 0
     const classStats = {}
     const weaponStats = {}
 
@@ -106,6 +107,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
         const timePlayedPerClass = getTimePlayedPerClass(game.startTime, game.endTime, discordId, game.events)
         const killsAndDeathsPerWeapon = getKillsAndDeathsPerWeapon(discordId, game.events)
+        const gameTime = game.endTime - game.startTime
 
         Object.keys(timePlayedPerClass).forEach(className => {
             classStats[className].playingTime += timePlayedPerClass[className]
@@ -117,10 +119,12 @@ getPlayerStats = async (statsDb, discordId) => {
             totalKills += killsAndDeathsPerWeapon[weapon].kills
             totalDeaths += killsAndDeathsPerWeapon[weapon].deaths
         })
+
+        totalGatherTime += gameTime
     })
 
     return {
-        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths
+        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime
     }
 }
 

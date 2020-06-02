@@ -17,9 +17,9 @@ const events = require("events");
 const gather = require("../utils/gather")
 const TTW_CLASSES = gather.TTW_CLASSES
 const TTW_EVENTS = gather.TTW_EVENTS
-const SOLDAT_WEAPONS = gather.SOLDAT_WEAPONS
 
 const soldat = require("../utils/soldat")
+const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
 const soldatEvents = require("../utils/soldatEvents")
 
 

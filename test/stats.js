@@ -104,6 +104,7 @@ describe('Stats', () => {
 
         let playerStats = await stats.getPlayerStats(statsDb, "Player1")
         expect(playerStats).containSubset({
+            totalGatherTime: 20 * 60e+4,
             totalGames: 1,
             wonGames: 1,
             lostGames: 0,
@@ -117,6 +118,7 @@ describe('Stats', () => {
 
         playerStats = await stats.getPlayerStats(statsDb, "Player2")
         expect(playerStats).containSubset({
+            totalGatherTime: 20 * 60e+4,
             totalGames: 1,
             wonGames: 1,
             lostGames: 0,
@@ -135,6 +137,7 @@ describe('Stats', () => {
 
         playerStats = await stats.getPlayerStats(statsDb, "Player3")
         expect(playerStats).containSubset({
+            totalGatherTime: 20 * 60e+4,
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
@@ -147,6 +150,7 @@ describe('Stats', () => {
 
         playerStats = await stats.getPlayerStats(statsDb, "Player4")
         expect(playerStats).containSubset({
+            totalGatherTime: 20 * 60e+4,
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
