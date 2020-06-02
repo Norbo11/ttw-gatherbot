@@ -27,39 +27,48 @@ IN_GAME_STATES = {
 const TTW_CLASSES = {
     GENERAL: {
         name: "GENERAL",
-        aliases: ["GENERAL", "GEN"]
+        aliases: ["GENERAL", "GEN"],
+        formattedName: "General",
     },
     RADIOMAN: {
         name: "RADIOMAN",
-        aliases: ["RADIOMAN", "RAD"]
+        aliases: ["RADIOMAN", "RAD"],
+        formattedName: "Radioman",
     },
     SABOTEUR: {
         name: "SABOTEUR",
-        aliases: ["SABOTEUR", "SABO"]
+        aliases: ["SABOTEUR", "SABO"],
+        formattedName: "Saboteur",
     },
     LONG_RANGE_INFANTRY: {
         name: "LONG_RANGE_INFANTRY",
-        aliases: ["LRI"]
+        aliases: ["LRI"],
+        formattedName: "Long Range Infantry",
     },
     SHORT_RANGE_INFANTRY: {
         name: "SHORT_RANGE_INFANTRY",
-        aliases: ["SRI"]
+        aliases: ["SRI"],
+        formattedName: "Short Range Infantry",
     },
     SPY: {
         name: "SPY",
-        aliases: ["SPY"]
+        aliases: ["SPY"],
+        formattedName: "Spy",
     },
     ELITE: {
         name: "ELITE",
-        aliases: ["ELITE"]
+        aliases: ["ELITE"],
+        formattedName: "Elite",
     },
     ARTILLERY: {
         name: "ARTILLERY",
-        aliases: ["ARTILLERY", "ART"]
+        aliases: ["ARTILLERY", "ART"],
+        formattedName: "Artillery",
     },
     ENGINEER: {
         name: "ENGINEER",
-        aliases: ["ENGINEER", "ENG"]
+        aliases: ["ENGINEER", "ENG"],
+        formattedName: "Engineer",
     }
 }
 
@@ -86,6 +95,7 @@ class Gather {
     endTime = undefined
     currentGeneral = undefined
     currentRadioman = undefined
+    currentMap = undefined
 
     constructor(soldatClient, discordChannel) {
         this.soldatClient = soldatClient
@@ -171,6 +181,8 @@ class Gather {
             this.serverPassword = password
 
             this.soldatClient.getServerInfo(serverInfo => {
+                this.currentMap = serverInfo["mapName"]
+
                 shuffledQueue.forEach(user => {
                     user.send({
                         embed: {

@@ -1,4 +1,6 @@
 const _ = require("lodash")
+const moment = require("moment")
+
 const logger = require("./logger")
 const gather = require("./gather")
 const soldat = require("./soldat")
@@ -24,6 +26,8 @@ getTimePlayedPerClass = (startTime, endTime, playerName, events) => {
     })
 
     let lastEventTimestamp = startTime
+
+    // TODO: Figure out how to get the initial class of a player. Safest option is to add a new command to the server
     let lastClass = undefined
 
     events = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH && event.playerName === playerName)
@@ -128,6 +132,50 @@ getPlayerStats = async (statsDb, discordId) => {
     }
 }
 
+const formatMilliseconds = (millis) => {
+    const momentDuration = moment.duration(millis)
+    return `${momentDuration.hours().toString().padStart(2, "0")}:${momentDuration.minutes().toString().padStart(2, "0")}:${momentDuration.seconds().toString().padStart(2, "0")}`
+}
+
+const formatGeneralStatsForPlayer = (playerStats) => {
+    const overallStats = [
+        `Total Gather Time: ${formatMilliseconds(playerStats.totalGatherTime)}`,
+        `Won/Lost: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`,
+        `Kills/Deaths: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
+    ]
+
+    let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponName => {return {weaponName, ...playerStats.weaponStats[weaponName]}})
+    favouriteWeapons = _.sortBy(favouriteWeapons, weaponStat => -weaponStat.kills)
+    favouriteWeapons = _.take(favouriteWeapons, 3)
+    favouriteWeapons = favouriteWeapons.map(weaponStat => `${weaponStat.weaponName}: ${weaponStat.kills} kills`)
+
+    let favouriteClasses = Object.keys(playerStats.classStats).map(className => {return {className, ...playerStats.classStats[className]}})
+    favouriteClasses = _.sortBy(favouriteClasses, classStat => -classStat.playingTime)
+    favouriteClasses = _.take(favouriteClasses, 3)
+    favouriteClasses = favouriteClasses.map(classStat => `${classStat.className}: ${formatMilliseconds(classStat.playingTime)}`)
+
+    return {
+        embed: {
+            fields: [
+                {
+                    name: "Overall Stats",
+                    value: overallStats.join("\n")
+                },
+                {
+                    name: "Favourite Weapons",
+                    value: favouriteWeapons.join("\n"),
+                    inline: true
+                },
+                {
+                    name: "Favourite Classes",
+                    value: favouriteClasses.join("\n"),
+                    inline: true
+                },
+            ]
+        }
+    }
+}
+
 module.exports = {
-    gameFinished, getAllGames, getPlayerStats
+    gameFinished, getAllGames, getPlayerStats, formatGeneralStatsForPlayer
 }
