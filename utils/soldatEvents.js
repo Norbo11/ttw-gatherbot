@@ -62,7 +62,7 @@ registerSoldatEventListeners = (gather, netClient) => {
                 match.groups["killerName"],
                 soldat.TEAMS[parseInt(match.groups["victimTeam"])],
                 match.groups["victimName"],
-                match.groups["weapon"]
+                match.groups["weapon"],
             )
             eventText = text
         }

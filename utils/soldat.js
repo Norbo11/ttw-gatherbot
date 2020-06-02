@@ -8,6 +8,23 @@ const TEAMS = {
     2: "Bravo"
 }
 
+const SOLDAT_WEAPONS = {
+    DESERT_EAGLES: "Desert Eagles",
+    HK_MP5: "HK MP5",
+    AK_74: "Ak-74",
+    STEYR_AUG: "Steyr AUG",
+    SPAS_12: "Spas-12",
+    RUGER_77: "Ruger 77",
+    M79: "M79",
+    BARRET_M82A1: "Barrett M82A1",
+    FN_MINIMI: "FN Minimi",
+    XM214_MINIGUN: "XM214 Minigun",
+    USSOCOM: "USSOCOM",
+    COMBAT_KNIFE: "Combat Knife",
+    CHAINSAW: "Chainsaw",
+    M72_LAW: "M72 LAW",
+}
+
 // This is a parser used to parse the output of the REFRESHX command: https://wiki.soldat.pl/index.php/Refreshx
 const soldatRefreshxParser = new Parser()
     .string("refreshx", {
@@ -273,5 +290,5 @@ class SoldatClient {
 }
 
 module.exports = {
-    SoldatClient, connectToSoldatServer, TEAMS
+    SoldatClient, connectToSoldatServer, TEAMS, SOLDAT_WEAPONS
 }

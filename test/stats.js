@@ -11,10 +11,12 @@ const logger = require("../utils/logger")
 
 const stats = require("../utils/stats")
 const db = require("../utils/db")
-
 const gather = require("../utils/gather")
+const soldat = require("../utils/soldat")
+
 const TTW_CLASSES = gather.TTW_CLASSES
 const TTW_EVENTS = gather.TTW_EVENTS
+const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
 
 
 describe('Stats', () => {
@@ -73,6 +75,15 @@ describe('Stats', () => {
                     newClass: TTW_CLASSES.GENERAL.name,
                 },
                 {
+                    timestamp: 1000 + 2 * 60e+4,
+                    type: TTW_EVENTS.PLAYER_KILL,
+                    killerTeam: "Alpha",
+                    killerName: "Player2",
+                    victimTeam: "Bravo",
+                    victimName: "Player3",
+                    weapon: SOLDAT_WEAPONS.AK_74
+                },
+                {
                     timestamp: 1000 + 8 * 60e+4,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     playerName: "Player1",
@@ -96,7 +107,7 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 1,
             lostGames: 0,
-        })
+       })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.name]).eql({
             playingTime: 12 * 60e+4
         })
@@ -109,6 +120,7 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 1,
             lostGames: 0,
+            totalKills: 1,
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.name]).eql({
             playingTime: 8 * 60e+4
@@ -116,12 +128,21 @@ describe('Stats', () => {
         expect(playerStats.classStats[TTW_CLASSES.RADIOMAN.name]).eql({
             playingTime: 12 * 60e+4
         })
+        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74]).eql({
+            kills: 1,
+            deaths: 0,
+        })
 
         playerStats = await stats.getPlayerStats(statsDb, "Player3")
         expect(playerStats).containSubset({
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
+            totalDeaths: 1,
+        })
+        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74]).eql({
+            deaths: 1,
+            kills: 0,
         })
 
         playerStats = await stats.getPlayerStats(statsDb, "Player4")

@@ -17,6 +17,7 @@ const events = require("events");
 const gather = require("../utils/gather")
 const TTW_CLASSES = gather.TTW_CLASSES
 const TTW_EVENTS = gather.TTW_EVENTS
+const SOLDAT_WEAPONS = gather.SOLDAT_WEAPONS
 
 const soldat = require("../utils/soldat")
 const soldatEvents = require("../utils/soldatEvents")
@@ -188,7 +189,7 @@ describe('Gather', () => {
             "killerName": "[WP] NamelessWolf",
             "victimTeam": "Alpha",
             "victimName": "SethGecko",
-            "weapon": "Ak-74",
+            "weapon": SOLDAT_WEAPONS.AK_74,
         })
     });
 });
