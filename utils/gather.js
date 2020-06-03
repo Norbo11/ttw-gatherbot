@@ -235,8 +235,8 @@ class Gather {
         this.serverPassword = ""
 
         this.statsDb.insertGame({
-            alphaPlayers: this.alphaTeam,
-            bravoPlayers: this.bravoTeam,
+            alphaPlayers: this.alphaTeam.map(user => user.id),
+            bravoPlayers: this.bravoTeam.map(user => user.id),
             alphaTickets: alphaTickets,
             bravoTickets: bravoTickets,
             startTime: this.startTime,
@@ -314,6 +314,8 @@ class Gather {
     }
 
     pushEvent(eventType, eventBody = {}) {
+        // TODO: translate all player names to their discord IDs (probably before pushing any event)
+
         const event = {
             type: eventType,
             timestamp: Date.now(),
