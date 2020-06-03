@@ -97,9 +97,10 @@ class Gather {
     currentRadioman = undefined
     currentMap = undefined
 
-    constructor(soldatClient, discordChannel) {
+    constructor(soldatClient, discordChannel, statsDb) {
         this.soldatClient = soldatClient
         this.discordChannel = discordChannel
+        this.statsDb = statsDb
     }
 
     getPlayerStrings(delim = "\n") {
@@ -232,6 +233,16 @@ class Gather {
         this.soldatClient.setServerPassword("")
 
         this.serverPassword = ""
+
+        this.statsDb.insertGame({
+            alphaPlayers: this.alphaTeam,
+            bravoPlayers: this.bravoTeam,
+            alphaTickets: alphaTickets,
+            bravoTickets: bravoTickets,
+            startTime: this.startTime,
+            endTime: this.endTime,
+            events: this.events
+        }).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
 
         this.discordChannel.send({
             embed: {

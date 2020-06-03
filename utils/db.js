@@ -47,5 +47,5 @@ class StatsDB {
 }
 
 module.exports = {
-    StatsDB
+    StatsDB, getDbConnection
 }
