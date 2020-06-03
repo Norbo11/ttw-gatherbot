@@ -5,6 +5,10 @@ getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+getRandomString = () => {
+    return Math.random().toString(36).substring(7);
+}
+
 module.exports = {
-    getRandomInt
+    getRandomInt, getRandomString
 }

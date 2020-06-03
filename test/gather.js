@@ -74,7 +74,7 @@ describe('Gather', () => {
         expect(currentGather.events[0]).containSubset(
             {
                 "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-                "playerName": "SethGecko",
+                "discordId": "SethGecko",
                 "newClass": TTW_CLASSES.GENERAL.name
             }
         )
@@ -83,13 +83,13 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[0]).containSubset({
             "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "playerName": "SethGecko",
+            "discordId": "SethGecko",
             "newClass": TTW_CLASSES.GENERAL.name
         })
 
         expect(currentGather.events[1]).containSubset({
             "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "playerName": "SethGecko",
+            "discordId": "SethGecko",
             "newClass": TTW_CLASSES.RADIOMAN.name
         })
     });
@@ -105,7 +105,7 @@ describe('Gather', () => {
         expect(currentGather.events[0]).containSubset(
             {
                 "type": TTW_EVENTS.FLAG_CAP,
-                "playerName": "Norbo11",
+                "discordId": "Norbo11",
                 "teamName": "Alpha"
             }
         )
@@ -115,7 +115,7 @@ describe('Gather', () => {
         expect(currentGather.events[1]).containSubset(
             {
                 "type": TTW_EVENTS.FLAG_CAP,
-                "playerName": "Someone",
+                "discordId": "Someone",
                 "teamName": "Bravo"
             }
         )
@@ -154,7 +154,7 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
             "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "playerName": "SethGecko",
+            "discordId": "SethGecko",
             "newClass": TTW_CLASSES.GENERAL.name
         })
         expect(currentGather.currentGeneral).equal("SethGecko")
@@ -164,7 +164,7 @@ describe('Gather', () => {
         expect(currentGather.events[1]).containSubset(
             {
                 "type": TTW_EVENTS.BUNKER_CONQUER,
-                "playerName": "SethGecko",
+                "discordId": "SethGecko",
                 "conqueringTeam": "Alpha",
                 "alphaTickets": 100,
                 "bravoTickets": 500,

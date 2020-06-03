@@ -18,7 +18,7 @@ getAllGames = async (statsDb) => {
     return await statsDb.getAllGames()
 }
 
-getTimePlayedPerClass = (startTime, endTime, playerName, events) => {
+getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
     const classTime = {}
 
     Object.keys(TTW_CLASSES).forEach(className => {
@@ -30,7 +30,7 @@ getTimePlayedPerClass = (startTime, endTime, playerName, events) => {
     // TODO: Figure out how to get the initial class of a player. Safest option is to add a new command to the server
     let lastClass = undefined
 
-    events = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH && event.playerName === playerName)
+    events = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH && event.discordId === discordId)
 
     events.forEach(event => {
         classTime[event.oldClass] += event.timestamp - lastEventTimestamp
@@ -42,13 +42,13 @@ getTimePlayedPerClass = (startTime, endTime, playerName, events) => {
     if (lastClass !== undefined) {
         classTime[lastClass] += endTime - lastEventTimestamp
     } else {
-        logger.log.warn(`Got no class switch events for player ${playerName}! Gather start time: ${startTime}`)
+        logger.log.warn(`Got no class switch events for player ${discordId}! Gather start time: ${startTime}`)
     }
 
     return classTime
 }
 
-getKillsAndDeathsPerWeapon = (playerName, events) => {
+getKillsAndDeathsPerWeapon = (discordId, events) => {
     const weaponStats = {}
 
     Object.keys(SOLDAT_WEAPONS).forEach(weapon => {
@@ -58,8 +58,8 @@ getKillsAndDeathsPerWeapon = (playerName, events) => {
         }
     })
 
-    const killEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.killerName === playerName)
-    const deathEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.victimName === playerName)
+    const killEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.killerName === discordId)
+    const deathEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.victimName === discordId)
 
     killEvents.forEach(event => {
         weaponStats[event.weapon].kills += 1

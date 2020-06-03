@@ -44,6 +44,25 @@ class StatsDB {
         })
         return result.toArray()
     }
+
+    async getHwidMap() {
+        const result = await this.db.collection("HWID").find({});
+        const map = await result.next()
+
+        if (map === null) {
+            return {}
+        } else {
+            return map
+        }
+    }
+
+    async insertHwid(hwid, discordId) {
+        const hwidMap = await this.getHwidMap()
+        hwidMap[hwid] = discordId
+
+        await this.db.collection("HWID").deleteOne({})
+        await this.db.collection("HWID").insertOne(hwidMap)
+    }
 }
 
 module.exports = {

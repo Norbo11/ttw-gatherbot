@@ -8,10 +8,10 @@ registerSoldatEventListeners = (gather, netClient) => {
     netClient.addListener("data", function (data) {
         try {
             const text = data.toString();
-
-            if (!gather.gatherInProgress()) {
-                return
-            }
+            //
+            // if (!gather.gatherInProgress()) {
+            //     return
+            // }
 
             // TODO: Server keeps spamming these messages, should probably silence them
             if (text.startsWith("--- hwid")) {
@@ -68,7 +68,6 @@ registerSoldatEventListeners = (gather, netClient) => {
                 eventText = text
             }
 
-
             match = text.match(/--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/)
             if (match !== null) {
                 gather.conquer(
@@ -78,6 +77,18 @@ registerSoldatEventListeners = (gather, netClient) => {
                     parseInt(match.groups["currentAlphaBunker"]),
                     parseInt(match.groups["currentBravoBunker"]),
                     match.groups["sabotaging"] !== "0")
+                eventText = text
+            }
+
+            match = text.match(/\[(?<playerName>.*?)] !say (?<message>.*)/)
+            if (match !== null) {
+                gather.playerSay(match.groups["playerName"], match.groups["message"])
+                eventText = text
+            }
+
+            match = text.match(/(?<playerName>.*?) has joined (?<teamName>.*?) team/)
+            if (match !== null) {
+                gather.playerJoin(match.groups["playerName"])
                 eventText = text
             }
 

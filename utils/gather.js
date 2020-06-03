@@ -24,6 +24,8 @@ IN_GAME_STATES = {
     "GATHER_STARTED": "GATHER_STARTED",
 }
 
+NOT_AUTHED_KICK_TIMER_SECONDS = 60
+
 const TTW_CLASSES = {
     GENERAL: {
         name: "GENERAL",
@@ -96,6 +98,8 @@ class Gather {
     currentGeneral = undefined
     currentRadioman = undefined
     currentMap = undefined
+    kickTimers = {}
+    authCodes = {}
 
     constructor(soldatClient, discordChannel, statsDb) {
         this.soldatClient = soldatClient
@@ -172,7 +176,7 @@ class Gather {
         const alphaPlayers = _.slice(shuffledQueue, 0, this.currentSize / 2)
         const bravoPlayers = _.slice(shuffledQueue, this.currentSize / 2, this.currentSize)
 
-        const password = Math.random().toString(36).substring(7);
+        const password = random.getRandomString()
 
         this.alphaTeam = alphaPlayers
         this.bravoTeam = bravoPlayers
@@ -343,6 +347,18 @@ class Gather {
             if (matchingClass === TTW_CLASSES.RADIOMAN) {
                 this.currentRadioman = playerName
             }
+            return
+        }
+
+        if (command.startsWith("auth")) {
+            const split = command.split(" ")
+            if (split.length !== 2) {
+                this.soldatClient.messagePlayer("Usage: /auth <authcode>")
+                return
+            }
+
+            const authCode = split[1]
+            this.playerInGameAuth(playerName, authCode)
         }
     }
 
@@ -362,6 +378,55 @@ class Gather {
         this.pushEvent(TTW_EVENTS.PLAYER_KILL, {
             killerTeam, killerName, victimTeam, victimName, weapon
         })
+    }
+
+    playerJoin(playerName) {
+        soldatClient.getPlayerHwid(playerName, hwid => {
+            const hwidMap = this.statsDb.getHwidMap()
+
+            if (hwid in hwidMap) {
+                logger.log.info(`${playerName} found in HWID map, no auth needed`)
+
+                const discordUser = this.discordChannel.client.fetchUser(hwidMap[hwid])
+                soldatClient.messagePlayer(playerName, `You are authenticated as ${discordUser.username} in Discord`)
+
+            } else {
+                logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
+
+                soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
+                    `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
+
+                this.kickTimers[playerName] = setTimeout(() => {
+                    soldatClient.kickPlayer(playerName)
+                }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
+            }
+        })
+    }
+
+    playerInGameAuth(playerName, authCode) {
+        if (!(authCode in this.authCodes)) {
+            soldatClient.messagePlayer(playerName, "Invalid auth code. Please type !auth in the gather channel and check your PMs.")
+            return
+        }
+
+        const discordId = this.authCodes[authCode]
+        soldatClient.getPlayerHwid(playerName, hwid => {
+            this.statsDb.insertHwid(hwid, discordId).then(() => {
+                soldatClient.messagePlayer(playerName, "You have been successfully authenticated.")
+                logger.log.info(`${playerName} successfully authenticated, clearing kick timer...`)
+                clearTimeout(this.kickTimers[playerName])
+            })
+        })
+    }
+
+    playerDiscordAuth(discordId) {
+        const authCode = random.getRandomString()
+        this.authCodes[authCode] = discordId
+        return authCode
+    }
+
+    playerSay(playerName, message) {
+        this.discordChannel.send(`[${playerName}] ${message}`)
     }
 }
 

@@ -1,3 +1,4 @@
+const _ = require("lodash")
 const net = require("net")
 const constants = require("../constants")
 const logger = require("../utils/logger")
@@ -286,6 +287,28 @@ class SoldatClient {
         this.client.write(`/gathersize ${newSize}\n`);
         this.client.write("/restart\n");
         this.client.write(`/say Gather size set to ${newSize}\n`);
+    }
+
+    getPlayerHwid(playerName, callback) {
+        soldatClient.getServerInfo((serverInfo) => {
+            const index = _.findIndex(serverInfo["names"], name => name["playerName"] === playerName)
+
+            if (index !== -1) {
+                const hwid = serverInfo["hwids"][index]["hwid"].trim()
+                callback(hwid)
+            } else {
+                throw new Error(`Could not get HWID of player ${playerName}`)
+            }
+        })
+    }
+
+    messagePlayer(playerName, message) {
+        this.client.write(`/pm ${playerName} ${message}\n`);
+    }
+
+    kickPlayer(playerName) {
+        logger.log.info(`Kicking player ${playerName}`)
+        this.client.write(`/kick ${playerName}\n`);
     }
 }
 

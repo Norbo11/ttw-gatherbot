@@ -63,14 +63,14 @@ describe('Stats', () => {
                 {
                     timestamp: 1000,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
-                    playerName: "Player1",
+                    discordId: "Player1",
                     oldClass: TTW_CLASSES.LONG_RANGE_INFANTRY.name,
                     newClass: TTW_CLASSES.RADIOMAN.name,
                 },
                 {
                     timestamp: 1000,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
-                    playerName: "Player2",
+                    discordId: "Player2",
                     oldClass: TTW_CLASSES.LONG_RANGE_INFANTRY.name,
                     newClass: TTW_CLASSES.GENERAL.name,
                 },
@@ -86,14 +86,14 @@ describe('Stats', () => {
                 {
                     timestamp: 1000 + 8 * 60e+3,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
-                    playerName: "Player1",
+                    discordId: "Player1",
                     oldClass: TTW_CLASSES.RADIOMAN.name,
                     newClass: TTW_CLASSES.GENERAL.name,
                 },
                 {
                     timestamp: 1000 + 8 * 60e+3,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
-                    playerName: "Player2",
+                    discordId: "Player2",
                     oldClass: TTW_CLASSES.GENERAL.name,
                     newClass: TTW_CLASSES.RADIOMAN.name,
                 }
