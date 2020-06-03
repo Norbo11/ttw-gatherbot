@@ -303,11 +303,14 @@ class Gather {
     }
 
     pushEvent(eventType, eventBody = {}) {
-        this.events.push({
+        const event = {
             type: eventType,
             timestamp: Date.now(),
             ...eventBody
-        })
+        }
+
+        console.log(`Pushing event: ${event}`)
+        this.events.push(event)
     }
 
     playerCommand(playerName, currentClass, command) {
