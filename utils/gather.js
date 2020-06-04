@@ -382,24 +382,26 @@ class Gather {
 
     playerJoin(playerName) {
         soldatClient.getPlayerHwid(playerName, hwid => {
-            const hwidMap = this.statsDb.getHwidMap()
+            logger.log.info(`${playerName} joined with HWID ${hwid}`)
 
-            if (hwid in hwidMap) {
-                logger.log.info(`${playerName} found in HWID map, no auth needed`)
+            this.statsDb.getHwidMap().then(async hwidMap => {
+                if (hwid in hwidMap) {
+                    logger.log.info(`${playerName} found in HWID map, no auth needed`)
 
-                const discordUser = this.discordChannel.client.fetchUser(hwidMap[hwid])
-                soldatClient.messagePlayer(playerName, `You are authenticated as ${discordUser.username} in Discord`)
+                    const discordUser = await this.discordChannel.client.fetchUser(hwidMap[hwid])
+                    soldatClient.messagePlayer(playerName, `You are authenticated in Discord as ${discordUser.username}`)
 
-            } else {
-                logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
+                } else {
+                    logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
 
-                soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
-                    `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
+                    soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
+                        `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
 
-                this.kickTimers[playerName] = setTimeout(() => {
-                    soldatClient.kickPlayer(playerName)
-                }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
-            }
+                    this.kickTimers[playerName] = setTimeout(() => {
+                        soldatClient.kickPlayer(playerName)
+                    }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
+                }
+            })
         })
     }
 
@@ -411,10 +413,13 @@ class Gather {
 
         const discordId = this.authCodes[authCode]
         soldatClient.getPlayerHwid(playerName, hwid => {
+            logger.log.info(`Authenticating ${playerName} with HWID ${hwid} (discord ID ${discordId})`)
+
             this.statsDb.insertHwid(hwid, discordId).then(() => {
                 soldatClient.messagePlayer(playerName, "You have been successfully authenticated.")
-                logger.log.info(`${playerName} successfully authenticated, clearing kick timer...`)
+                logger.log.info(`${playerName} successfully authenticated, clearing kick timer and auth code...`)
                 clearTimeout(this.kickTimers[playerName])
+                delete this.authCodes[authCode]
             })
         })
     }

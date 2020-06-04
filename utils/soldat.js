@@ -290,16 +290,29 @@ class SoldatClient {
     }
 
     getPlayerHwid(playerName, callback) {
-        soldatClient.getServerInfo((serverInfo) => {
-            const index = _.findIndex(serverInfo["names"], name => name["playerName"] === playerName)
+        // For whatever reason, getting the HWID using REFRESHX sometimes doesn't return the right value. It's a bit
+        // unpredictable when it does work, and when it doesn't. So we're relying on the constant --- hwid messages
+        // that the server spams,
 
-            if (index !== -1) {
-                const hwid = serverInfo["hwids"][index]["hwid"].trim()
-                callback(hwid)
-            } else {
-                throw new Error(`Could not get HWID of player ${playerName}`)
+        // callback("blah")
+        // soldatClient.getServerInfo((serverInfo) => {
+        //     const index = _.findIndex(serverInfo["names"], name => name["playerName"] === playerName)
+        //
+        //     if (index !== -1) {
+        //         const hwid = serverInfo["hwids"][index]["hwid"].trim()
+        //         callback(hwid)
+        //     } else {
+        //         throw new Error(`Could not get HWID of player ${playerName}`)
+        //     }
+        // })
+
+        this.listenForServerResponse(text => {
+            const match = text.match(/--- hwid (?<hwid>.*?) (?<playerName>.*)/)
+            if (match !== null) {
+                return match.groups["hwid"];
             }
-        })
+            return false;
+        }, callback)
     }
 
     messagePlayer(playerName, message) {
