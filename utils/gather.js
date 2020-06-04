@@ -285,6 +285,8 @@ class Gather {
     }
 
     translatePlayerNameToDiscordId(playerName) {
+
+        // Should only happen if somehow we failed to grab the HWID when they joined
         if (!(playerName in this.playerNameToHwid)) {
             logger.log.error(`${playerName} not found in PlayerName -> HWID map, shouldn't happen! Using in-game name as Discord ID`)
             return playerName
@@ -292,6 +294,7 @@ class Gather {
 
         const hwid = this.playerNameToHwid[playerName]
 
+        /// Should only happen if the gather has started and the player isn't yet authenticated
         if (!(hwid in this.hwidToDiscordId)) {
             logger.log.warn(`${playerName} is not yet authenticated; did not find in HWID -> DiscordID map. Using in-game name as Discord ID`)
             return playerName
