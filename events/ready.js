@@ -9,12 +9,12 @@ module.exports = client => {
     logger.log.info(`Logged in to Discord server as ${client.user.username}!`)
 
     const netClient = soldat.connectToSoldatServer()
-    global.soldatClient = new soldat.SoldatClient(netClient)
-    global.discordChannel = client.channels.get(constants.DISCORD_CHANNEL_ID)
+    global.currentSoldatClient = new soldat.SoldatClient(netClient)
+    global.currentDiscordChannel = client.channels.get(constants.DISCORD_CHANNEL_ID)
 
     db.getDbConnection().then((dbConnection) => {
-        global.statsDb = new db.StatsDB(dbConnection)
-        global.currentGather = new gather.Gather(soldatClient, discordChannel, statsDb)
+        global.currentStatsDb = new db.StatsDB(dbConnection)
+        global.currentGather = new gather.Gather(currentSoldatClient, currentDiscordChannel, currentStatsDb)
         soldatEvents.registerSoldatEventListeners(currentGather, netClient)
     })
 }

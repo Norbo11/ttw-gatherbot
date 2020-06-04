@@ -26,7 +26,7 @@ client.login(process.env.BOT_TOKEN)
 
 cleanUp =  () => {
     logger.log.info("Closing connection to Soldat Server...")
-    soldatClient.client.end()
+    currentSoldatClient.client.end()
     logger.log.info("Connection successfully terminated.")
     process.exit(0)
 }

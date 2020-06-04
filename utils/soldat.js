@@ -295,7 +295,7 @@ class SoldatClient {
         // that the server spams,
 
         // callback("blah")
-        // soldatClient.getServerInfo((serverInfo) => {
+        // this.soldatClient.getServerInfo((serverInfo) => {
         //     const index = _.findIndex(serverInfo["names"], name => name["playerName"] === playerName)
         //
         //     if (index !== -1) {

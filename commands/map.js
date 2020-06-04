@@ -12,7 +12,7 @@ module.exports = {
 
         message.channel.send("Changing map, hang on...")
 
-        soldatClient.changeMap(args[0], (mapChangeResult) => {
+        currentSoldatClient.changeMap(args[0], (mapChangeResult) => {
             if (mapChangeResult === "found") {
                 message.channel.send({
                     embed: {

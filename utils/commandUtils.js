@@ -2,8 +2,8 @@ const logger = require("./logger")
 
 
 displayGatherStatus = (message) => {
-    soldatClient.getServerInfo(serverInfo => {
-        soldatClient.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
+    currentSoldatClient.getServerInfo(serverInfo => {
+        currentSoldatClient.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
             let description = undefined;
 
@@ -30,7 +30,7 @@ displayGatherStatus = (message) => {
 
 
 displayServerInfo = (message) => {
-    soldatClient.getServerInfo(serverInfo => {
+    currentSoldatClient.getServerInfo(serverInfo => {
         const alphaPlayerStrings = []
         const bravoPlayerStrings = []
 
@@ -89,7 +89,7 @@ displayServerInfo = (message) => {
 
 
 displayQueueWithServerInfo = (message) => {
-    soldatClient.getServerInfo(serverInfo => {
+    currentSoldatClient.getServerInfo(serverInfo => {
         currentGather.displayQueue(serverInfo)
     })
 }
