@@ -3,6 +3,7 @@ const logger = require("./logger")
 const discord = require("./discord")
 const constants = require("../constants")
 const random = require("./random")
+const util = require("util")
 
 MAPS_LIST = [
     "ttw_42ndWood", "ttw_Borderwars", "ttw_Concrete", "ttw_Forgotten", "ttw_Junkyard", "ttw_Mudder", "ttw_rime", "ttw_Take", "ttw_Village",
@@ -100,11 +101,14 @@ class Gather {
     currentMap = undefined
     kickTimers = {}
     authCodes = {}
+    playerNameToHwid = {}
+    hwidToDiscordId = {}
 
-    constructor(soldatClient, discordChannel, statsDb) {
+    constructor(soldatClient, discordChannel, statsDb, hwidToDiscordId) {
         this.soldatClient = soldatClient
         this.discordChannel = discordChannel
         this.statsDb = statsDb
+        this.hwidToDiscordId = hwidToDiscordId
     }
 
     getPlayerStrings(delim = "\n") {
@@ -280,9 +284,26 @@ class Gather {
         })
     }
 
+    translatePlayerNameToDiscordId(playerName) {
+        if (!(playerName in this.playerNameToHwid)) {
+            logger.log.error(`${playerName} not found in PlayerName -> HWID map, shouldn't happen! Using in-game name as Discord ID`)
+            return playerName
+        }
+
+        const hwid = this.playerNameToHwid[playerName]
+
+        if (!(hwid in this.hwidToDiscordId)) {
+            logger.log.warn(`${playerName} is not yet authenticated; did not find in HWID -> DiscordID map. Using in-game name as Discord ID`)
+            return playerName
+        }
+
+        return this.hwidToDiscordId[hwid]
+    }
+
     flagCap(playerName, teamName) {
         this.pushEvent(TTW_EVENTS.FLAG_CAP, {
-            playerName, teamName
+            discordId: this.translatePlayerNameToDiscordId(playerName),
+            teamName
         })
 
         this.discordChannel.send({
@@ -318,24 +339,27 @@ class Gather {
     }
 
     pushEvent(eventType, eventBody = {}) {
-        // TODO: translate all player names to their discord IDs (probably before pushing any event)
-
         const event = {
             type: eventType,
             timestamp: Date.now(),
             ...eventBody
         }
 
-        console.log(`Pushing event: ${event}`)
+        logger.log.info(`Pushing event ${util.inspect(event)}`)
         this.events.push(event)
     }
 
     playerCommand(playerName, currentClass, command) {
+        if (currentClass === "") {
+            logger.log.warn("Player's current class was empty, not registering this class switch event.")
+            return
+        }
+
         const matchingClass = _.find(TTW_CLASSES, (ttwClass) => ttwClass.aliases.includes(command.toUpperCase()))
 
         if (matchingClass !== undefined) {
             this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
-                playerName,
+                discordId: this.translatePlayerNameToDiscordId(playerName),
                 oldClass: currentClass,
                 newClass: matchingClass.name,
             })
@@ -364,7 +388,7 @@ class Gather {
 
     conquer(conqueringTeam, alphaTickets, bravoTickets, currentAlphaBunker, currentBravoBunker, sabotaging) {
         this.pushEvent(TTW_EVENTS.BUNKER_CONQUER, {
-            playerName: this.currentGeneral,
+            discordId: this.translatePlayerNameToDiscordId(this.currentGeneral),
             conqueringTeam,
             alphaTickets,
             bravoTickets,
@@ -376,7 +400,11 @@ class Gather {
 
     playerKill(killerTeam, killerName, victimTeam, victimName, weapon) {
         this.pushEvent(TTW_EVENTS.PLAYER_KILL, {
-            killerTeam, killerName, victimTeam, victimName, weapon
+            killerDiscordId: this.translatePlayerNameToDiscordId(killerName),
+            victimDiscordId: this.translatePlayerNameToDiscordId(victimName),
+            killerTeam,
+            victimTeam,
+            weapon
         })
     }
 
@@ -384,25 +412,32 @@ class Gather {
         this.soldatClient.getPlayerHwid(playerName, hwid => {
             logger.log.info(`${playerName} joined with HWID ${hwid}`)
 
-            this.statsDb.getHwidMap().then(async hwidMap => {
-                if (hwid in hwidMap) {
-                    logger.log.info(`${playerName} found in HWID map, no auth needed`)
+            this.playerNameToHwid[playerName] = hwid
 
-                    const discordUser = await this.discordChannel.client.fetchUser(hwidMap[hwid])
+            if (hwid in this.hwidToDiscordId) {
+                const discordId = this.hwidToDiscordId[hwid]
+
+                this.discordChannel.client.fetchUser(discordId).then(discordUser => {
                     this.soldatClient.messagePlayer(playerName, `You are authenticated in Discord as ${discordUser.username}`)
+                })
 
-                } else {
-                    logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
+                logger.log.info(`${playerName} (${hwid}) found in HWID map, no auth needed. Discord ID: ${discordId}`)
 
-                    this.soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
-                        `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
+            } else {
+                logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
 
-                    this.kickTimers[playerName] = setTimeout(() => {
-                        this.soldatClient.kickPlayer(playerName)
-                    }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
-                }
-            })
+                this.soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
+                    `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
+
+                this.kickTimers[playerName] = setTimeout(() => {
+                    this.soldatClient.kickPlayer(playerName)
+                }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
+            }
         })
+    }
+
+    playerLeave(playerName) {
+        delete this.playerNameToHwid[playerName]
     }
 
     playerInGameAuth(playerName, authCode) {
@@ -415,11 +450,14 @@ class Gather {
         this.soldatClient.getPlayerHwid(playerName, hwid => {
             logger.log.info(`Authenticating ${playerName} with HWID ${hwid} (discord ID ${discordId})`)
 
-            this.statsDb.insertHwid(hwid, discordId).then(() => {
+            this.statsDb.mapHwidToDiscordId(hwid, discordId).then(async () => {
                 this.soldatClient.messagePlayer(playerName, "You have been successfully authenticated.")
                 logger.log.info(`${playerName} successfully authenticated, clearing kick timer and auth code...`)
                 clearTimeout(this.kickTimers[playerName])
                 delete this.authCodes[authCode]
+                this.statsDb.getHwidToDiscordIdMap().then(hwidToDiscordId => {
+                    this.hwidToDiscordId = hwidToDiscordId
+                })
             })
         })
     }

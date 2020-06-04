@@ -78,9 +78,9 @@ describe('Stats', () => {
                     timestamp: 1000 + 2 * 60e+3,
                     type: TTW_EVENTS.PLAYER_KILL,
                     killerTeam: "Alpha",
-                    killerName: "Player2",
+                    killerDiscordId: "Player2",
                     victimTeam: "Bravo",
-                    victimName: "Player3",
+                    victimDiscordId: "Player3",
                     weapon: SOLDAT_WEAPONS.AK_74
                 },
                 {

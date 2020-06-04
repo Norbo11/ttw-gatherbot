@@ -14,9 +14,10 @@ getDbName = () => {
 getDbConnection = async () => {
     const url = getUrl()
     const dbName = getDbName()
-    logger.log.info(`Connecting to DB at ${url}/${dbName}`)
 
+    logger.log.info(`Attempting connection to DB at ${url}/${dbName}`)
     const client = await MongoClient.connect(url)
+    logger.log.info(`Successfully connected to DB at ${url}/${dbName}`)
     return client.db(dbName)
 }
 
@@ -45,7 +46,7 @@ class StatsDB {
         return result.toArray()
     }
 
-    async getHwidMap() {
+    async getHwidToDiscordIdMap() {
         const result = await this.db.collection("HWID").find({});
         const map = await result.next()
 
@@ -56,8 +57,8 @@ class StatsDB {
         }
     }
 
-    async insertHwid(hwid, discordId) {
-        const hwidMap = await this.getHwidMap()
+    async mapHwidToDiscordId(hwid, discordId) {
+        const hwidMap = await this.getHwidToDiscordIdMap()
         hwidMap[hwid] = discordId
 
         await this.db.collection("HWID").deleteOne({})

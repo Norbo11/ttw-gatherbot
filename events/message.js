@@ -4,8 +4,11 @@ const logger = require("../utils/logger")
 
 module.exports = (client, message) => {
 
-    // Do not process messages that don"t start with our prefix, or come from a bot
+    // Do not process messages that don't start with our prefix, or come from a bot
     if (!message.content.startsWith(constants.PREFIX) || message.author.bot) return;
+
+    // Do not process messages that don't come from the designated channel
+    if (message.channel !== currentDiscordChannel) return;
 
     const args = message.content.slice(constants.PREFIX.length).split(/ +/);
     const commandText = args.shift().toLowerCase();

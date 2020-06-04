@@ -24,6 +24,7 @@ const SOLDAT_WEAPONS = {
     COMBAT_KNIFE: "Combat Knife",
     CHAINSAW: "Chainsaw",
     M72_LAW: "M72 LAW",
+    HANDS: "Hands",
 }
 
 // This is a parser used to parse the output of the REFRESHX command: https://wiki.soldat.pl/index.php/Refreshx
@@ -308,7 +309,7 @@ class SoldatClient {
 
         this.listenForServerResponse(text => {
             const match = text.match(/--- hwid (?<hwid>.*?) (?<playerName>.*)/)
-            if (match !== null) {
+            if (match !== null && match.groups["playerName"] === playerName) {
                 return match.groups["hwid"];
             }
             return false;

@@ -58,8 +58,8 @@ getKillsAndDeathsPerWeapon = (discordId, events) => {
         }
     })
 
-    const killEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.killerName === discordId)
-    const deathEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.victimName === discordId)
+    const killEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.killerDiscordId === discordId)
+    const deathEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.victimDiscordId === discordId)
 
     killEvents.forEach(event => {
         weaponStats[event.weapon].kills += 1
@@ -139,35 +139,35 @@ const formatMilliseconds = (millis) => {
 
 const formatGeneralStatsForPlayer = (playerStats) => {
     const overallStats = [
-        `Total Gather Time: ${formatMilliseconds(playerStats.totalGatherTime)}`,
-        `Won/Lost: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`,
-        `Kills/Deaths: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
+        `**Total Gather Time**: ${formatMilliseconds(playerStats.totalGatherTime)}`,
+        `**Won/Lost**: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`,
+        `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponName => {return {weaponName, ...playerStats.weaponStats[weaponName]}})
     favouriteWeapons = _.sortBy(favouriteWeapons, weaponStat => -weaponStat.kills)
     favouriteWeapons = _.take(favouriteWeapons, 3)
-    favouriteWeapons = favouriteWeapons.map(weaponStat => `${weaponStat.weaponName}: ${weaponStat.kills} kills`)
+    favouriteWeapons = favouriteWeapons.map(weaponStat => `**${weaponStat.weaponName}**: ${weaponStat.kills} kills`)
 
     let favouriteClasses = Object.keys(playerStats.classStats).map(className => {return {className, ...playerStats.classStats[className]}})
     favouriteClasses = _.sortBy(favouriteClasses, classStat => -classStat.playingTime)
     favouriteClasses = _.take(favouriteClasses, 3)
-    favouriteClasses = favouriteClasses.map(classStat => `${classStat.className}: ${formatMilliseconds(classStat.playingTime)}`)
+    favouriteClasses = favouriteClasses.map(classStat => `**${classStat.className}**: ${formatMilliseconds(classStat.playingTime)}`)
 
     return {
         embed: {
             fields: [
                 {
-                    name: "Overall Stats",
+                    name: "**Overall Stats**",
                     value: overallStats.join("\n")
                 },
                 {
-                    name: "Favourite Weapons",
+                    name: "**Favourite Weapons**",
                     value: favouriteWeapons.join("\n"),
                     inline: true
                 },
                 {
-                    name: "Favourite Classes",
+                    name: "**Favourite Classes**",
                     value: favouriteClasses.join("\n"),
                     inline: true
                 },

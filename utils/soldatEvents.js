@@ -5,7 +5,7 @@ const soldat = require("./soldat")
 registerSoldatEventListeners = (gather, netClient) => {
     logger.log.info("Registered non-command event listeners.")
 
-    netClient.addListener("data", function (data) {
+    netClient.addListener("data", data => {
         try {
             const text = data.toString();
             //
@@ -89,6 +89,12 @@ registerSoldatEventListeners = (gather, netClient) => {
             match = text.match(/(?<playerName>.*?) has joined (?<teamName>.*?) team/)
             if (match !== null) {
                 gather.playerJoin(match.groups["playerName"])
+                eventText = text
+            }
+
+            match = text.match(/(?<playerName>.*?) has left (?<teamName>.*?) team/)
+            if (match !== null) {
+                gather.playerLeave(match.groups["playerName"])
                 eventText = text
             }
 
