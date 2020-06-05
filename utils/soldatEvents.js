@@ -61,7 +61,12 @@ PASSIVE_EVENTS = [
     },
     {
         pattern: /--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/,
-        handler: (gather, match) => gather.endGame(match.groups["alphaTickets"], match.groups["bravoTickets"], match.groups["alphaCaps"], match.groups["bravoCaps"]),
+        handler: (gather, match) => gather.endGame(
+            parseInt(match.groups["alphaTickets"]),
+            parseInt(match.groups["bravoTickets"]),
+            parseInt(match.groups["alphaCaps"]),
+            parseInt(match.groups["bravoCaps"])
+        ),
         condition: gather => gather.gatherInProgress()
     },
     {
