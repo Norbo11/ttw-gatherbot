@@ -33,24 +33,6 @@ describe('Stats', () => {
         conn.dropDatabase()
     })
 
-    it('should add a completed game', async () => {
-        const game = {
-            alphaPlayers: ["a", "b", "c"],
-            bravoPlayers: ["d", "e", "f"],
-            alphaTickets: 565,
-            bravoTickets: 0,
-            alphaCaps: 2,
-            bravoCaps: 0,
-
-        }
-
-        await stats.gameFinished(statsDb, game)
-
-        const games = await stats.getAllGames(statsDb)
-        expect(games.length).equal(1)
-        expect(games[0]).containSubset(game)
-    });
-
     it('should return stats of players', async () => {
         const game = {
             alphaPlayers: ["Player1", "Player2"],
@@ -92,11 +74,17 @@ describe('Stats', () => {
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     discordId: "Player2",
                     newClassId: TTW_CLASSES.RADIOMAN.id,
+                },
+                {
+                    timestamp: 1000 + 9 * 60e+3,
+                    type: TTW_EVENTS.FLAG_CAP,
+                    discordId: "Player2",
+                    teamName: "Alpha"
                 }
             ]
         }
 
-        await stats.gameFinished(statsDb, game)
+        await statsDb.insertGame(game)
 
         let playerStats = await stats.getPlayerStats(statsDb, "Player1")
         expect(playerStats).containSubset({
@@ -104,6 +92,7 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 1,
             lostGames: 0,
+            totalCaps: 0,
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 12 * 60e+3
@@ -119,6 +108,7 @@ describe('Stats', () => {
             wonGames: 1,
             lostGames: 0,
             totalKills: 1,
+            totalCaps: 1,
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 8 * 60e+3
@@ -163,6 +153,7 @@ describe('Stats Formatter', () => {
             lostGames: 1,
             totalKills: 12,
             totalDeaths: 7,
+            totalCaps: 2,
             classStats: {
                 [TTW_CLASSES.GENERAL.id]: {
                     playingTime: 20 * 60e+3
@@ -197,7 +188,7 @@ describe('Stats Formatter', () => {
                 fields: [
                     {
                         name: "**Overall Stats**",
-                        value: "**Total Gather Time**: 00:45:00\n**Won/Lost**: 1/1 (50%)\n**Kills/Deaths**: 12/7 (1.71)",
+                        value: "**Gathers Played**: 2\n**Total Gather Time**: 00:45:00\n**Won/Lost**: 1/1 (50%)\n**Kills/Deaths**: 12/7 (1.71)\n**Caps**: 2 (1.00 per game)",
                     },
                     {
                         name: "**Favourite Weapons**",

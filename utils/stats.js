@@ -9,14 +9,15 @@ const TTW_CLASSES = gather.TTW_CLASSES
 const TTW_EVENTS = gather.TTW_EVENTS
 const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
 
-gameFinished = async (statsDb, game, ingameNameToDiscordId = (x) => x) => {
-    // TODO: Implement third argument
-    return await statsDb.insertGame(game)
+getCaps = (discordId, events) => {
+    events = _.filter(events, event =>
+        event.type === TTW_EVENTS.FLAG_CAP
+        && event.discordId === discordId
+    )
+
+    return events.length
 }
 
-getAllGames = async (statsDb) => {
-    return await statsDb.getAllGames()
-}
 
 getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
     const classTime = {}
@@ -94,6 +95,7 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalKills = 0
     let totalDeaths = 0
     let totalGatherTime = 0
+    let totalCaps = 0
     const classStats = {}
     const weaponStats = {}
 
@@ -122,6 +124,8 @@ getPlayerStats = async (statsDb, discordId) => {
             lostGames += 1
         }
 
+        totalCaps += getCaps(discordId, game.events)
+
         const timePlayedPerClass = getTimePlayedPerClass(game.startTime, game.endTime, discordId, game.events)
         const killsAndDeathsPerWeapon = getKillsAndDeathsPerWeapon(discordId, game.events)
         const gameTime = game.endTime - game.startTime
@@ -141,7 +145,7 @@ getPlayerStats = async (statsDb, discordId) => {
     })
 
     return {
-        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime
+        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps
     }
 }
 
@@ -152,9 +156,11 @@ const formatMilliseconds = (millis) => {
 
 const formatGeneralStatsForPlayer = (playerStats) => {
     const overallStats = [
+        `**Gathers Played**: ${playerStats.totalGames}`,
         `**Total Gather Time**: ${formatMilliseconds(playerStats.totalGatherTime)}`,
         `**Won/Lost**: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`,
         `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
+        `**Caps**: ${playerStats.totalCaps} (${(playerStats.totalCaps / playerStats.totalGames).toFixed(2)} per game)`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {
@@ -196,5 +202,5 @@ const formatGeneralStatsForPlayer = (playerStats) => {
 }
 
 module.exports = {
-    gameFinished, getAllGames, getPlayerStats, formatGeneralStatsForPlayer
+    getPlayerStats, formatGeneralStatsForPlayer
 }
