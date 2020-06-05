@@ -18,6 +18,14 @@ getCaps = (discordId, events) => {
     return events.length
 }
 
+getNumberOfTimesConquered = (discordId, events) => {
+    events = _.filter(events, event =>
+        event.type === TTW_EVENTS.BUNKER_CONQUER
+        && event.discordId === discordId
+    )
+
+    return events.length
+}
 
 getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
     const classTime = {}
@@ -96,6 +104,7 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalDeaths = 0
     let totalGatherTime = 0
     let totalCaps = 0
+    let totalConquers = 0
     const classStats = {}
     const weaponStats = {}
 
@@ -125,6 +134,7 @@ getPlayerStats = async (statsDb, discordId) => {
         }
 
         totalCaps += getCaps(discordId, game.events)
+        totalConquers += getNumberOfTimesConquered(discordId, game.events)
 
         const timePlayedPerClass = getTimePlayedPerClass(game.startTime, game.endTime, discordId, game.events)
         const killsAndDeathsPerWeapon = getKillsAndDeathsPerWeapon(discordId, game.events)
@@ -145,7 +155,8 @@ getPlayerStats = async (statsDb, discordId) => {
     })
 
     return {
-        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps
+        totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
+        totalConquers
     }
 }
 
@@ -161,6 +172,7 @@ const formatGeneralStatsForPlayer = (playerStats) => {
         `**Won/Lost**: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`,
         `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
         `**Caps**: ${playerStats.totalCaps} (${(playerStats.totalCaps / playerStats.totalGames).toFixed(2)} per game)`,
+        `**Bunker Conquers**: ${playerStats.totalConquers}`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {

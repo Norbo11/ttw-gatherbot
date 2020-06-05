@@ -55,6 +55,17 @@ describe('Stats', () => {
                     newClassId: TTW_CLASSES.GENERAL.id,
                 },
                 {
+                    timestamp: 1000 + 60e+3,
+                    type: TTW_EVENTS.BUNKER_CONQUER,
+                    discordId: "Player2",
+                    conqueringTeam: "Alpha",
+                    alphaTickets: "1000",
+                    bravoTickets: "900",
+                    currentAlphaBunker: 1,
+                    currentBravoBunker: 4,
+                    sabotaging: false
+                },
+                {
                     timestamp: 1000 + 2 * 60e+3,
                     type: TTW_EVENTS.PLAYER_KILL,
                     killerTeam: "Alpha",
@@ -93,6 +104,7 @@ describe('Stats', () => {
             wonGames: 1,
             lostGames: 0,
             totalCaps: 0,
+            totalConquers: 0
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 12 * 60e+3
@@ -109,6 +121,7 @@ describe('Stats', () => {
             lostGames: 0,
             totalKills: 1,
             totalCaps: 1,
+            totalConquers: 1
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 8 * 60e+3
@@ -154,6 +167,7 @@ describe('Stats Formatter', () => {
             totalKills: 12,
             totalDeaths: 7,
             totalCaps: 2,
+            totalConquers: 10,
             classStats: {
                 [TTW_CLASSES.GENERAL.id]: {
                     playingTime: 20 * 60e+3
@@ -188,16 +202,28 @@ describe('Stats Formatter', () => {
                 fields: [
                     {
                         name: "**Overall Stats**",
-                        value: "**Gathers Played**: 2\n**Total Gather Time**: 00:45:00\n**Won/Lost**: 1/1 (50%)\n**Kills/Deaths**: 12/7 (1.71)\n**Caps**: 2 (1.00 per game)",
+                        value:
+                            "**Gathers Played**: 2\n" +
+                            "**Total Gather Time**: 00:45:00\n" +
+                            "**Won/Lost**: 1/1 (50%)\n" +
+                            "**Kills/Deaths**: 12/7 (1.71)\n" +
+                            "**Caps**: 2 (1.00 per game)\n" +
+                            "**Bunker Conquers**: 10",
                     },
                     {
                         name: "**Favourite Weapons**",
-                        value: "**Ak-74**: 12 kills\n**HK MP5**: 5 kills\n**FN Minimi**: 3 kills",
+                        value:
+                            "**Ak-74**: 12 kills\n" +
+                            "**HK MP5**: 5 kills\n" +
+                            "**FN Minimi**: 3 kills",
                         inline: true,
                     },
                     {
                         name: "**Favourite Classes**",
-                        value: "**Radioman**: 00:25:00\n**General**: 00:20:00\n**Artillery**: 00:00:00",
+                        value:
+                            "**Radioman**: 00:25:00\n" +
+                            "**General**: 00:20:00\n" +
+                            "**Artillery**: 00:00:00",
                         inline: true,
                     },
                 ]
