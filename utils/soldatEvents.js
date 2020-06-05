@@ -2,108 +2,103 @@ const logger = require("./logger")
 const soldat = require("./soldat")
 
 
+PASSIVE_EVENTS = [
+    /* Events to process when the gather has already started */
+    {
+        pattern: /(?<playerName>.*?) scores for (?<teamName>.*?) Team/,
+        handler: (gather, match) => gather.flagCap(match.groups["playerName"], match.groups["teamName"]),
+        condition: gather => gather.gatherHasStarted()
+    },
+    {
+        pattern: /--- gatherpause/,
+        handler: (gather, match) => gather.gatherPause(),
+        condition: gather => gather.gatherHasStarted()
+    },
+    {
+        pattern: /--- gatherunpause/,
+        handler: (gather, match) => gather.gatherUnpause(),
+        condition: gather => gather.gatherHasStarted()
+    },
+    {
+        pattern: /\((?<killerTeam>.*?)\) (?<killerName>.*?) killed \((?<victimTeam>.*?)\) (?<victimName>.*?) with (?<weapon>.*)/,
+        handler: (gather, match) =>
+            gather.playerKill(
+                soldat.TEAMS[match.groups["killerTeam"]],
+                match.groups["killerName"],
+                soldat.TEAMS[match.groups["victimTeam"]],
+                match.groups["victimName"],
+                soldat.getWeaponByFormattedName(match.groups["weapon"]),
+            ),
+        condition: gather => gather.gatherHasStarted()
+    },
+    {
+        pattern: /--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/,
+        handler: (gather, match) =>
+            gather.conquer(
+                soldat.TEAMS[parseInt(match.groups["conqueringTeam"])],
+                parseInt(match.groups["alphaTickets"]),
+                parseInt(match.groups["bravoTickets"]),
+                parseInt(match.groups["currentAlphaBunker"]),
+                parseInt(match.groups["currentBravoBunker"]),
+                match.groups["sabotaging"] !== "0"),
+        condition: gather => gather.gatherHasStarted()
+    },
+    /* Events to process when the gather has either started or is in pre-reset mode */
+    {
+        pattern: /(?<playerName>.*?) has joined (?<teamName>.*?) team/,
+        handler: (gather, match) => gather.playerJoin(match.groups["playerName"]),
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /(?<playerName>.*?) has left (?<teamName>.*?) team/,
+        handler: (gather, match) => gather.playerLeave(match.groups["playerName"]),
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/,
+        handler: (gather, match) => gather.gatherStart(match.groups["mapName"], gather.currentSize, parseInt(match.groups["numberOfBunkers"])),
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/,
+        handler: (gather, match) => gather.endGame(match.groups["alphaTickets"], match.groups["bravoTickets"], match.groups["alphaCaps"], match.groups["bravoCaps"]),
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /\[CMD\] (?<currentClass>.*?) \((?<playerName>.*?)\): \/(?<command>.*)/,
+        handler: (gather, match) => gather.playerCommand(match.groups["playerName"], match.groups["currentClass"], match.groups["command"]),
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /<New TTW> (?<playerName>.*?) assigned to task (?<classId>.*)/,
+        handler: (gather, match) => gather.playerClassSwitch(match.groups["playerName"], match.groups["classId"]),
+        // We need to track class changes even pre-reset, as people might choose their class before the reset.
+        condition: gather => gather.gatherInProgress()
+    },
+    {
+        pattern: /\[(?<playerName>.*?)] !say (?<message>.*)/,
+        handler: (gather, match) => gather.playerSay(match.groups["playerName"], match.groups["message"]),
+        condition: gather => gather.gatherInProgress()
+    },
+]
+
 registerSoldatEventListeners = (gather, netClient) => {
     logger.log.info("Registered non-command event listeners.")
 
     netClient.addListener("data", data => {
-        try {
-            const text = data.toString();
-            //
-            // if (!gather.gatherInProgress()) {
-            //     return
-            // }
+        const text = data.toString();
 
-            // TODO: Server keeps spamming these messages, should probably silence them
-            if (text.startsWith("--- hwid")) {
-                return
+        PASSIVE_EVENTS.forEach(eventSpec => {
+            let match = text.match(eventSpec.pattern)
+            if (match !== null && eventSpec.condition(gather)) {
+                try {
+                    eventSpec.handler(gather, match)
+                } catch (e) {
+                    logger.log.error(`There was an error processing passive events from the server: ${e}`)
+                }
+                logger.log.info(`Received passive event from server: ${text}`)
             }
-
-            let eventText = undefined
-
-            let match = text.match(/(?<playerName>.*?) scores for (?<teamName>.*?) Team/)
-            if (match !== null) {
-                gather.flagCap(match.groups["playerName"], match.groups["teamName"])
-                eventText = text
-            }
-
-            match = text.match(/--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/)
-            if (match !== null) {
-                gather.gatherStart(match.groups["mapName"], gather.currentSize, parseInt(match.groups["numberOfBunkers"]))
-                eventText = text
-            }
-
-            match = text.match(/--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/)
-            if (match !== null) {
-                gather.endGame(match.groups["alphaTickets"], match.groups["bravoTickets"], match.groups["alphaCaps"], match.groups["bravoCaps"])
-                eventText = text
-            }
-
-            match = text.match(/--- gatherpause/)
-            if (match !== null) {
-                gather.gatherPause()
-                eventText = text
-            }
-
-            match = text.match(/--- gatherunpause/)
-            if (match !== null) {
-                gather.gatherUnpause()
-                eventText = text
-            }
-
-            match = text.match(/\[CMD\] (?<currentClass>.*?) \((?<playerName>.*?)\): \/(?<command>.*)/)
-            if (match !== null) {
-                gather.playerCommand(match.groups["playerName"], match.groups["currentClass"], match.groups["command"])
-                eventText = text
-            }
-
-            match = text.match(/\((?<killerTeam>.*?)\) (?<killerName>.*?) killed \((?<victimTeam>.*?)\) (?<victimName>.*?) with (?<weapon>.*)/)
-            if (match !== null) {
-                gather.playerKill(
-                    soldat.TEAMS[parseInt(match.groups["killerTeam"])],
-                    match.groups["killerName"],
-                    soldat.TEAMS[parseInt(match.groups["victimTeam"])],
-                    match.groups["victimName"],
-                    match.groups["weapon"],
-                )
-                eventText = text
-            }
-
-            match = text.match(/--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/)
-            if (match !== null) {
-                gather.conquer(
-                    soldat.TEAMS[parseInt(match.groups["conqueringTeam"])],
-                    parseInt(match.groups["alphaTickets"]),
-                    parseInt(match.groups["bravoTickets"]),
-                    parseInt(match.groups["currentAlphaBunker"]),
-                    parseInt(match.groups["currentBravoBunker"]),
-                    match.groups["sabotaging"] !== "0")
-                eventText = text
-            }
-
-            match = text.match(/\[(?<playerName>.*?)] !say (?<message>.*)/)
-            if (match !== null) {
-                gather.playerSay(match.groups["playerName"], match.groups["message"])
-                eventText = text
-            }
-
-            match = text.match(/(?<playerName>.*?) has joined (?<teamName>.*?) team/)
-            if (match !== null) {
-                gather.playerJoin(match.groups["playerName"])
-                eventText = text
-            }
-
-            match = text.match(/(?<playerName>.*?) has left (?<teamName>.*?) team/)
-            if (match !== null) {
-                gather.playerLeave(match.groups["playerName"])
-                eventText = text
-            }
-
-            if (eventText !== undefined) {
-                logger.log.info(`Received passive event from server: ${eventText}`)
-            }
-        } catch (e) {
-            logger.log.error(`There was an error processing passive events from the server: ${e}`)
-        }
+        })
     });
 }
 

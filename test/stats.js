@@ -64,15 +64,13 @@ describe('Stats', () => {
                     timestamp: 1000,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     discordId: "Player1",
-                    oldClass: TTW_CLASSES.LONG_RANGE_INFANTRY.name,
-                    newClass: TTW_CLASSES.RADIOMAN.name,
+                    newClassId: TTW_CLASSES.RADIOMAN.id,
                 },
                 {
                     timestamp: 1000,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     discordId: "Player2",
-                    oldClass: TTW_CLASSES.LONG_RANGE_INFANTRY.name,
-                    newClass: TTW_CLASSES.GENERAL.name,
+                    newClassId: TTW_CLASSES.GENERAL.id,
                 },
                 {
                     timestamp: 1000 + 2 * 60e+3,
@@ -81,21 +79,19 @@ describe('Stats', () => {
                     killerDiscordId: "Player2",
                     victimTeam: "Bravo",
                     victimDiscordId: "Player3",
-                    weapon: SOLDAT_WEAPONS.AK_74
+                    weaponId: SOLDAT_WEAPONS.AK_74.id,
                 },
                 {
                     timestamp: 1000 + 8 * 60e+3,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     discordId: "Player1",
-                    oldClass: TTW_CLASSES.RADIOMAN.name,
-                    newClass: TTW_CLASSES.GENERAL.name,
+                    newClassId: TTW_CLASSES.GENERAL.id,
                 },
                 {
                     timestamp: 1000 + 8 * 60e+3,
                     type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
                     discordId: "Player2",
-                    oldClass: TTW_CLASSES.GENERAL.name,
-                    newClass: TTW_CLASSES.RADIOMAN.name,
+                    newClassId: TTW_CLASSES.RADIOMAN.id,
                 }
             ]
         }
@@ -109,10 +105,10 @@ describe('Stats', () => {
             wonGames: 1,
             lostGames: 0,
         })
-        expect(playerStats.classStats[TTW_CLASSES.GENERAL.name]).eql({
+        expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 12 * 60e+3
         })
-        expect(playerStats.classStats[TTW_CLASSES.RADIOMAN.name]).eql({
+        expect(playerStats.classStats[TTW_CLASSES.RADIOMAN.id]).eql({
             playingTime: 8 * 60e+3
         })
 
@@ -124,13 +120,13 @@ describe('Stats', () => {
             lostGames: 0,
             totalKills: 1,
         })
-        expect(playerStats.classStats[TTW_CLASSES.GENERAL.name]).eql({
+        expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 8 * 60e+3
         })
-        expect(playerStats.classStats[TTW_CLASSES.RADIOMAN.name]).eql({
+        expect(playerStats.classStats[TTW_CLASSES.RADIOMAN.id]).eql({
             playingTime: 12 * 60e+3
         })
-        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74]).eql({
+        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74.id]).eql({
             kills: 1,
             deaths: 0,
         })
@@ -143,7 +139,7 @@ describe('Stats', () => {
             lostGames: 1,
             totalDeaths: 1,
         })
-        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74]).eql({
+        expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74.id]).eql({
             deaths: 1,
             kills: 0,
         })
@@ -168,26 +164,26 @@ describe('Stats Formatter', () => {
             totalKills: 12,
             totalDeaths: 7,
             classStats: {
-                [TTW_CLASSES.GENERAL.formattedName]: {
+                [TTW_CLASSES.GENERAL.id]: {
                     playingTime: 20 * 60e+3
                 },
-                [TTW_CLASSES.RADIOMAN.formattedName]: {
+                [TTW_CLASSES.RADIOMAN.id]: {
                     playingTime: 25 * 60e+3
                 },
-                [TTW_CLASSES.ARTILLERY.formattedName]: {
+                [TTW_CLASSES.ARTILLERY.id]: {
                     playingTime: 0
                 },
             },
             weaponStats: {
-                [SOLDAT_WEAPONS.AK_74]: {
+                [SOLDAT_WEAPONS.AK_74.id]: {
                     kills: 12,
                     deaths: 7
                 },
-                [SOLDAT_WEAPONS.FN_MINIMI]: {
+                [SOLDAT_WEAPONS.FN_MINIMI.id]: {
                     kills: 3,
                     deaths: 2
                 },
-                [SOLDAT_WEAPONS.HK_MP5]: {
+                [SOLDAT_WEAPONS.HK_MP5.id]: {
                     kills: 5,
                     deaths: 7
                 }
@@ -200,17 +196,17 @@ describe('Stats Formatter', () => {
             embed: {
                 fields: [
                     {
-                        name: "Overall Stats",
-                        value: "Total Gather Time: 00:45:00\nWon/Lost: 1/1 (50%)\nKills/Deaths: 12/7 (1.71)",
+                        name: "**Overall Stats**",
+                        value: "**Total Gather Time**: 00:45:00\n**Won/Lost**: 1/1 (50%)\n**Kills/Deaths**: 12/7 (1.71)",
                     },
                     {
-                        name: "Favourite Weapons",
-                        value: "Ak-74: 12 kills\nHK MP5: 5 kills\nFN Minimi: 3 kills",
+                        name: "**Favourite Weapons**",
+                        value: "**Ak-74**: 12 kills\n**HK MP5**: 5 kills\n**FN Minimi**: 3 kills",
                         inline: true,
                     },
                     {
-                        name: "Favourite Classes",
-                        value: "Radioman: 00:25:00\nGeneral: 00:20:00\nArtillery: 00:00:00",
+                        name: "**Favourite Classes**",
+                        value: "**Radioman**: 00:25:00\n**General**: 00:20:00\n**Artillery**: 00:00:00",
                         inline: true,
                     },
                 ]

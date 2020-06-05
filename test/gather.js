@@ -105,26 +105,26 @@ describe('Gather', () => {
         netClient.emit("data", "--- hwid C c")
         netClient.emit("data", "--- hwid D d")
 
-        netClient.emit("data", "[CMD] SRI (a): /gen")
+        netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.GENERAL.id}`)
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
-            "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "discordId": "1",
-            "newClass": TTW_CLASSES.GENERAL.name
+            type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
+            discordId: "1",
+            newClassId: TTW_CLASSES.GENERAL.id
         })
 
-        netClient.emit("data", "[CMD] GEN (a): /radioman")
+        netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.RADIOMAN.id}`)
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[0]).containSubset({
-            "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "discordId": "1",
-            "newClass": TTW_CLASSES.GENERAL.name
+            type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
+            discordId: "1",
+            newClassId: TTW_CLASSES.GENERAL.id
         })
 
         expect(currentGather.events[1]).containSubset({
-            "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "discordId": "1",
-            "newClass": TTW_CLASSES.RADIOMAN.name
+            type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
+            discordId: "1",
+            newClassId: TTW_CLASSES.RADIOMAN.id
         })
     });
 
@@ -133,14 +133,15 @@ describe('Gather', () => {
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
+        currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "Norbo11 scores for Alpha Team")
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset(
             {
-                "type": TTW_EVENTS.FLAG_CAP,
-                "discordId": "Norbo11",
-                "teamName": "Alpha"
+                type: TTW_EVENTS.FLAG_CAP,
+                discordId: "Norbo11",
+                teamName: "Alpha"
             }
         )
 
@@ -148,9 +149,9 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[1]).containSubset(
             {
-                "type": TTW_EVENTS.FLAG_CAP,
-                "discordId": "Someone",
-                "teamName": "Bravo"
+                type: TTW_EVENTS.FLAG_CAP,
+                discordId: "Someone",
+                teamName: "Bravo"
             }
         )
     });
@@ -160,12 +161,13 @@ describe('Gather', () => {
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
+        currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "--- gatherpause")
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset(
             {
-                "type": TTW_EVENTS.GATHER_PAUSE,
+                type: TTW_EVENTS.GATHER_PAUSE,
             }
         )
 
@@ -173,7 +175,7 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[1]).containSubset(
             {
-                "type": TTW_EVENTS.GATHER_UNPAUSE,
+                type: TTW_EVENTS.GATHER_UNPAUSE,
             }
         )
     });
@@ -183,13 +185,14 @@ describe('Gather', () => {
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
+        currentGather.gatherStart('ttw_Test', 4, 5)
 
-        netClient.emit("data", "[CMD] SRI (SethGecko): /gen")
+        netClient.emit("data", `<New TTW> SethGecko assigned to task ${TTW_CLASSES.GENERAL.id}`)
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
-            "type": TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            "discordId": "SethGecko",
-            "newClass": TTW_CLASSES.GENERAL.name
+            type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
+            discordId: "SethGecko",
+            newClassId: TTW_CLASSES.GENERAL.id
         })
         expect(currentGather.currentGeneral).equal("SethGecko")
 
@@ -197,14 +200,14 @@ describe('Gather', () => {
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[1]).containSubset(
             {
-                "type": TTW_EVENTS.BUNKER_CONQUER,
-                "discordId": "SethGecko",
-                "conqueringTeam": "Alpha",
-                "alphaTickets": 100,
-                "bravoTickets": 500,
-                "currentAlphaBunker": 3,
-                "currentBravoBunker": 5,
-                "sabotaging": false
+                type: TTW_EVENTS.BUNKER_CONQUER,
+                discordId: "SethGecko",
+                conqueringTeam: "Alpha",
+                alphaTickets: 100,
+                bravoTickets: 500,
+                currentAlphaBunker: 3,
+                currentBravoBunker: 5,
+                sabotaging: false
             }
         )
     });
@@ -214,16 +217,17 @@ describe('Gather', () => {
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
+        currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "(2) [WP] NamelessWolf killed (1) SethGecko with Ak-74")
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
-            "type": TTW_EVENTS.PLAYER_KILL,
-            "killerTeam": "Bravo",
-            "killerDiscordId": "[WP] NamelessWolf",
-            "victimTeam": "Alpha",
-            "victimDiscordId": "SethGecko",
-            "weapon": SOLDAT_WEAPONS.AK_74,
+            type: TTW_EVENTS.PLAYER_KILL,
+            killerTeam: "Bravo",
+            killerDiscordId: "[WP] NamelessWolf",
+            victimTeam: "Alpha",
+            victimDiscordId: "SethGecko",
+            weaponId: SOLDAT_WEAPONS.AK_74.id,
         })
     });
 });

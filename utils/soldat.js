@@ -5,26 +5,81 @@ const logger = require("../utils/logger")
 const Parser = require("binary-parser").Parser
 
 const TEAMS = {
-    1: "Alpha",
-    2: "Bravo"
+    "1": "Alpha",
+    "2": "Bravo"
 }
 
 const SOLDAT_WEAPONS = {
-    DESERT_EAGLES: "Desert Eagles",
-    HK_MP5: "HK MP5",
-    AK_74: "Ak-74",
-    STEYR_AUG: "Steyr AUG",
-    SPAS_12: "Spas-12",
-    RUGER_77: "Ruger 77",
-    M79: "M79",
-    BARRET_M82A1: "Barrett M82A1",
-    FN_MINIMI: "FN Minimi",
-    XM214_MINIGUN: "XM214 Minigun",
-    USSOCOM: "USSOCOM",
-    COMBAT_KNIFE: "Combat Knife",
-    CHAINSAW: "Chainsaw",
-    M72_LAW: "M72 LAW",
-    HANDS: "Hands",
+    DESERT_EAGLES: {
+        id: "1",
+        formattedName: "Desert Eagles"
+    },
+    HK_MP5: {
+        id: "2",
+        formattedName: "HK MP5"
+    },
+    AK_74: {
+        id: "3",
+        formattedName: "Ak-74"
+    },
+    STEYR_AUG: {
+        id: "4",
+        formattedName: "Steyr AUG"
+    },
+    SPAS_12: {
+        id: "5",
+        formattedName: "Spas-12"
+    },
+    RUGER_77: {
+        id: "6",
+        formattedName: "Ruger 77"
+    },
+    M79: {
+        id: "7",
+        formattedName: "M79"
+    },
+    BARRET_M82A1: {
+        id: "8",
+        formattedName: "Barrett M82A1"
+    },
+    FN_MINIMI: {
+        id: "9",
+        formattedName: "FN Minimi"
+    },
+    XM214_MINIGUN: {
+        id: "10",
+        formattedName: "XM214 Minigun"
+    },
+    USSOCOM: {
+        id: "11",
+        formattedName: "USSOCOM"
+    },
+    COMBAT_KNIFE: {
+        id: "12",
+        formattedName: "Combat Knife"
+    },
+    CHAINSAW: {
+        id: "13",
+        formattedName: "Chainsaw"
+    },
+    M72_LAW: {
+        id: "14",
+        formattedName: "M72 LAW"
+    },
+    HANDS: {
+        id: "15",
+        formattedName: "Hands"
+    },
+}
+
+getWeaponByFormattedName = (formattedName) => {
+    const key = _.findKey(SOLDAT_WEAPONS, weapon => weapon.formattedName === formattedName)
+    return SOLDAT_WEAPONS[key]
+}
+
+getWeaponById = (id) => {
+    const key = _.findKey(SOLDAT_WEAPONS, weapon => weapon.id === id)
+    return SOLDAT_WEAPONS[key]
 }
 
 // This is a parser used to parse the output of the REFRESHX command: https://wiki.soldat.pl/index.php/Refreshx
@@ -327,5 +382,5 @@ class SoldatClient {
 }
 
 module.exports = {
-    SoldatClient, connectToSoldatServer, TEAMS, SOLDAT_WEAPONS
+    SoldatClient, connectToSoldatServer, TEAMS, SOLDAT_WEAPONS, getWeaponById, getWeaponByFormattedName
 }

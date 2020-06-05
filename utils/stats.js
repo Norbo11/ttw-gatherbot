@@ -21,29 +21,32 @@ getAllGames = async (statsDb) => {
 getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
     const classTime = {}
 
-    Object.keys(TTW_CLASSES).forEach(className => {
-        classTime[className] = 0
+    Object.keys(TTW_CLASSES).forEach(classKey => {
+        classTime[TTW_CLASSES[classKey].id] = 0
     })
 
-    let lastEventTimestamp = startTime
+    events = _.filter(events, event =>
+        event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH
+        && event.discordId === discordId
+    )
 
-    // TODO: Figure out how to get the initial class of a player. Safest option is to add a new command to the server
-    let lastClass = undefined
+    if (events.length === 0) {
+        logger.log.warn(`Got no class switch events for player ${discordId}! Gather start time: ${startTime}`)
+        return classTime
+    }
 
-    events = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH && event.discordId === discordId)
+    let lastEventTimestamp = events[0].timestamp
+    let lastClassId = events[0].newClassId
+
+    events = _.takeRight(events, events.length - 1)
 
     events.forEach(event => {
-        classTime[event.oldClass] += event.timestamp - lastEventTimestamp
+        classTime[lastClassId] += event.timestamp - lastEventTimestamp
         lastEventTimestamp = event.timestamp
-        lastClass = event.newClass
+        lastClassId = event.newClassId
     })
 
-    // Guard against cases when we somehow did not get any class switch events for the player
-    if (lastClass !== undefined) {
-        classTime[lastClass] += endTime - lastEventTimestamp
-    } else {
-        logger.log.warn(`Got no class switch events for player ${discordId}! Gather start time: ${startTime}`)
-    }
+    classTime[lastClassId] += endTime - lastEventTimestamp
 
     return classTime
 }
@@ -51,22 +54,32 @@ getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
 getKillsAndDeathsPerWeapon = (discordId, events) => {
     const weaponStats = {}
 
-    Object.keys(SOLDAT_WEAPONS).forEach(weapon => {
-        weaponStats[SOLDAT_WEAPONS[weapon]] = {
+    Object.keys(SOLDAT_WEAPONS).forEach(weaponKey => {
+        weaponStats[SOLDAT_WEAPONS[weaponKey].id] = {
             kills: 0,
             deaths: 0
         }
     })
 
-    const killEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.killerDiscordId === discordId)
-    const deathEvents = _.filter(events, event => event.type === TTW_EVENTS.PLAYER_KILL && event.victimDiscordId === discordId)
+    const killEvents = _.filter(events, event =>
+        event.type === TTW_EVENTS.PLAYER_KILL
+        && event.killerDiscordId === discordId
+        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills
+        && event.killerTeam !== event.victimTeam // Do not count friendly kills
+    )
+    const deathEvents = _.filter(events, event =>
+        event.type === TTW_EVENTS.PLAYER_KILL
+        && event.victimDiscordId === discordId
+        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills
+        && event.killerTeam !== event.victimTeam // Do not count friendly kills
+    )
 
     killEvents.forEach(event => {
-        weaponStats[event.weapon].kills += 1
+        weaponStats[event.weaponId].kills += 1
     })
 
     deathEvents.forEach(event => {
-        weaponStats[event.weapon].deaths += 1
+        weaponStats[event.weaponId].deaths += 1
     })
 
     return weaponStats
@@ -84,14 +97,14 @@ getPlayerStats = async (statsDb, discordId) => {
     const classStats = {}
     const weaponStats = {}
 
-    Object.keys(TTW_CLASSES).forEach(className => {
-        classStats[className] = {
+    Object.keys(TTW_CLASSES).forEach(classKey => {
+        classStats[TTW_CLASSES[classKey].id] = {
             playingTime: 0
         }
     })
 
-    Object.keys(SOLDAT_WEAPONS).forEach(weapon => {
-        weaponStats[SOLDAT_WEAPONS[weapon]] = {
+    Object.keys(SOLDAT_WEAPONS).forEach(weaponKey => {
+        weaponStats[SOLDAT_WEAPONS[weaponKey].id] = {
             kills: 0,
             deaths: 0
         }
@@ -113,15 +126,15 @@ getPlayerStats = async (statsDb, discordId) => {
         const killsAndDeathsPerWeapon = getKillsAndDeathsPerWeapon(discordId, game.events)
         const gameTime = game.endTime - game.startTime
 
-        Object.keys(timePlayedPerClass).forEach(className => {
-            classStats[className].playingTime += timePlayedPerClass[className]
+        Object.keys(timePlayedPerClass).forEach(classId => {
+            classStats[classId].playingTime += timePlayedPerClass[classId]
         })
 
-        Object.keys(killsAndDeathsPerWeapon).forEach(weapon => {
-            weaponStats[weapon].kills += killsAndDeathsPerWeapon[weapon].kills
-            weaponStats[weapon].deaths += killsAndDeathsPerWeapon[weapon].deaths
-            totalKills += killsAndDeathsPerWeapon[weapon].kills
-            totalDeaths += killsAndDeathsPerWeapon[weapon].deaths
+        Object.keys(killsAndDeathsPerWeapon).forEach(weaponId => {
+            weaponStats[weaponId].kills += killsAndDeathsPerWeapon[weaponId].kills
+            weaponStats[weaponId].deaths += killsAndDeathsPerWeapon[weaponId].deaths
+            totalKills += killsAndDeathsPerWeapon[weaponId].kills
+            totalDeaths += killsAndDeathsPerWeapon[weaponId].deaths
         })
 
         totalGatherTime += gameTime
@@ -144,12 +157,18 @@ const formatGeneralStatsForPlayer = (playerStats) => {
         `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
     ]
 
-    let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponName => {return {weaponName, ...playerStats.weaponStats[weaponName]}})
+    let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {
+        return {weaponName: soldat.getWeaponById(weaponId).formattedName, ...playerStats.weaponStats[weaponId]}
+    })
+
     favouriteWeapons = _.sortBy(favouriteWeapons, weaponStat => -weaponStat.kills)
     favouriteWeapons = _.take(favouriteWeapons, 3)
     favouriteWeapons = favouriteWeapons.map(weaponStat => `**${weaponStat.weaponName}**: ${weaponStat.kills} kills`)
 
-    let favouriteClasses = Object.keys(playerStats.classStats).map(className => {return {className, ...playerStats.classStats[className]}})
+    let favouriteClasses = Object.keys(playerStats.classStats).map(classId => {
+        return {className: gather.getClassById(classId).formattedName, ...playerStats.classStats[classId]}
+    })
+
     favouriteClasses = _.sortBy(favouriteClasses, classStat => -classStat.playingTime)
     favouriteClasses = _.take(favouriteClasses, 3)
     favouriteClasses = favouriteClasses.map(classStat => `**${classStat.className}**: ${formatMilliseconds(classStat.playingTime)}`)

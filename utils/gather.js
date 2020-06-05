@@ -20,59 +20,75 @@ MAPS_LIST = [
 
 
 IN_GAME_STATES = {
-    "NO_GATHER": "NO_GATHER",
-    "GATHER_PRE_RESET": "GATHER_PRE_RESET",
-    "GATHER_STARTED": "GATHER_STARTED",
+    NO_GATHER: "NO_GATHER",
+    GATHER_PRE_RESET: "GATHER_PRE_RESET",
+    GATHER_STARTED: "GATHER_STARTED",
 }
 
 NOT_AUTHED_KICK_TIMER_SECONDS = 60
 
+
 const TTW_CLASSES = {
+    LONG_RANGE_INFANTRY: {
+        id: "1",
+        name: "LONG_RANGE_INFANTRY",
+        aliases: ["LONG", "LRI"],
+        formattedName: "Long Range Infantry",
+    },
+    SHORT_RANGE_INFANTRY: {
+        id: "2",
+        name: "SHORT_RANGE_INFANTRY",
+        aliases: ["SHORT", "SRI"],
+        formattedName: "Short Range Infantry",
+    },
+    MEDIC: {
+        id: "3",
+        name: "MEDIC",
+        aliases: ["MEDIC", "MED", "DOC"],
+        formattedName: "General",
+    },
     GENERAL: {
+        id: "4",
         name: "GENERAL",
         aliases: ["GENERAL", "GEN"],
         formattedName: "General",
     },
     RADIOMAN: {
+        id: "5",
         name: "RADIOMAN",
         aliases: ["RADIOMAN", "RAD"],
         formattedName: "Radioman",
     },
     SABOTEUR: {
+        id: "6",
         name: "SABOTEUR",
         aliases: ["SABOTEUR", "SABO"],
         formattedName: "Saboteur",
     },
-    LONG_RANGE_INFANTRY: {
-        name: "LONG_RANGE_INFANTRY",
-        aliases: ["LRI"],
-        formattedName: "Long Range Infantry",
+    ENGINEER: {
+        id: "7",
+        name: "ENGINEER",
+        aliases: ["ENGINEER", "ENG"],
+        formattedName: "Engineer",
     },
-    SHORT_RANGE_INFANTRY: {
-        name: "SHORT_RANGE_INFANTRY",
-        aliases: ["SRI"],
-        formattedName: "Short Range Infantry",
+    ELITE: {
+        id: "8",
+        name: "ELITE",
+        aliases: ["ELITE", "ELI", "SNIPER", "SNIP"],
+        formattedName: "Elite",
     },
     SPY: {
+        id: "9",
         name: "SPY",
         aliases: ["SPY"],
         formattedName: "Spy",
     },
-    ELITE: {
-        name: "ELITE",
-        aliases: ["ELITE"],
-        formattedName: "Elite",
-    },
     ARTILLERY: {
+        id: "10",
         name: "ARTILLERY",
         aliases: ["ARTILLERY", "ART"],
         formattedName: "Artillery",
     },
-    ENGINEER: {
-        name: "ENGINEER",
-        aliases: ["ENGINEER", "ENG"],
-        formattedName: "Engineer",
-    }
 }
 
 const TTW_EVENTS = {
@@ -83,6 +99,12 @@ const TTW_EVENTS = {
     BUNKER_CONQUER: "BUNKER_CONQUER",
     PLAYER_KILL: "PLAYER_KILL"
 }
+
+getClassById = (id) => {
+    const key = _.findKey(TTW_CLASSES, ttwClass => ttwClass.id === id)
+    return TTW_CLASSES[key]
+}
+
 
 class Gather {
 
@@ -103,6 +125,7 @@ class Gather {
     authCodes = {}
     playerNameToHwid = {}
     hwidToDiscordId = {}
+    playerNameToCurrentClassId = {}
 
     constructor(soldatClient, discordChannel, statsDb, hwidToDiscordId) {
         this.soldatClient = soldatClient
@@ -150,7 +173,11 @@ class Gather {
     }
 
     gatherInProgress() {
-        return this.inGameState !== IN_GAME_STATES["NO_GATHER"]
+        return this.inGameState !== IN_GAME_STATES.NO_GATHER
+    }
+
+    gatherHasStarted() {
+        return this.inGameState === IN_GAME_STATES.GATHER_STARTED
     }
 
     displayQueue(serverInfo) {
@@ -282,6 +309,19 @@ class Gather {
                 description: `Size ${size} gather started on **${mapName}**. GLHF!`
             }
         })
+
+        // When the gather starts, we push a class switch event for every player based on whatever we know they have
+        // picked up to this point. This is because we can't assume that players haven't chosen their task prior to the
+        // reset, when we don't want to process any events, as the gather hasn't started yet. This ensures that every
+        // gather has at least 1 class switch event for every player, for proper stats to be calculated.
+
+        _.forEach(this.playerNameToCurrentClassId, (classId, playerName) => {
+            this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
+                timestamp: this.startTime,
+                discordId: this.translatePlayerNameToDiscordId(playerName),
+                newClassId: classId,
+            })
+        })
     }
 
     translatePlayerNameToDiscordId(playerName) {
@@ -353,30 +393,6 @@ class Gather {
     }
 
     playerCommand(playerName, currentClass, command) {
-        if (currentClass === "") {
-            logger.log.warn("Player's current class was empty, not registering this class switch event.")
-            return
-        }
-
-        const matchingClass = _.find(TTW_CLASSES, (ttwClass) => ttwClass.aliases.includes(command.toUpperCase()))
-
-        if (matchingClass !== undefined) {
-            this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
-                discordId: this.translatePlayerNameToDiscordId(playerName),
-                oldClass: currentClass,
-                newClass: matchingClass.name,
-            })
-
-            if (matchingClass === TTW_CLASSES.GENERAL) {
-                this.currentGeneral = playerName
-            }
-
-            if (matchingClass === TTW_CLASSES.RADIOMAN) {
-                this.currentRadioman = playerName
-            }
-            return
-        }
-
         if (command.startsWith("auth")) {
             const split = command.split(" ")
             if (split.length !== 2) {
@@ -387,6 +403,23 @@ class Gather {
             const authCode = split[1]
             this.playerInGameAuth(playerName, authCode)
         }
+    }
+
+    playerClassSwitch(playerName, classId) {
+        this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
+            discordId: this.translatePlayerNameToDiscordId(playerName),
+            newClassId: classId,
+        })
+
+        if (classId === TTW_CLASSES.GENERAL.id) {
+            this.currentGeneral = playerName
+        }
+
+        if (classId === TTW_CLASSES.RADIOMAN.id) {
+            this.currentRadioman = playerName
+        }
+
+        this.playerNameToCurrentClassId[playerName] = classId
     }
 
     conquer(conqueringTeam, alphaTickets, bravoTickets, currentAlphaBunker, currentBravoBunker, sabotaging) {
@@ -407,7 +440,7 @@ class Gather {
             victimDiscordId: this.translatePlayerNameToDiscordId(victimName),
             killerTeam,
             victimTeam,
-            weapon
+            weaponId: weapon.id
         })
     }
 
@@ -477,6 +510,6 @@ class Gather {
 }
 
 module.exports = {
-    Gather, IN_GAME_STATES, TTW_CLASSES, TTW_EVENTS
+    Gather, IN_GAME_STATES, TTW_CLASSES, TTW_EVENTS, getClassById
 }
 
