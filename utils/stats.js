@@ -105,6 +105,7 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalGatherTime = 0
     let totalCaps = 0
     let totalConquers = 0
+    let totalTicketsLeftInWonGames = 0
     const classStats = {}
     const weaponStats = {}
 
@@ -129,6 +130,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
         if (winningTeam === playerTeam) {
             wonGames += 1
+            totalTicketsLeftInWonGames += game[winningTeam.toLowerCase() + "Tickets"]
         } else {
             lostGames += 1
         }
@@ -156,7 +158,31 @@ getPlayerStats = async (statsDb, discordId) => {
 
     return {
         totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
-        totalConquers
+        totalConquers, totalTicketsLeftInWonGames
+    }
+}
+
+const getGatherStats = async (statsDb) => {
+    const games = await statsDb.getAllGames()
+
+    let totalGames = games.length
+    let totalGatherTime = _.sum(games.map(game => game.endTime - game.startTime))
+    let totalTicketsLeft = _.sum(games.map(game => game.alphaTickets + game.bravoTickets))
+
+    let mapStats = {}
+
+    games.forEach(game => {
+        if (!(game.mapName in mapStats)) {
+            mapStats[game.mapName] = {
+                totalGames: 0
+            }
+        }
+
+        mapStats[game.mapName].totalGames += 1
+    })
+
+    return {
+        totalGames, totalGatherTime, totalTicketsLeft, mapStats
     }
 }
 
@@ -173,6 +199,7 @@ const formatGeneralStatsForPlayer = (playerStats) => {
         `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
         `**Caps**: ${playerStats.totalCaps} (${(playerStats.totalCaps / playerStats.totalGames).toFixed(2)} per game)`,
         `**Bunker Conquers**: ${playerStats.totalConquers}`,
+        `**Avg Tickets Left in Won Games**: ${(playerStats.totalTicketsLeftInWonGames / playerStats.wonGames).toFixed(0)} tickets`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {
@@ -213,6 +240,39 @@ const formatGeneralStatsForPlayer = (playerStats) => {
     }
 }
 
+const formatGatherStats = (gatherStats) => {
+    const overallStats = [
+        `**Gathers Played**: ${gatherStats.totalGames}`,
+        `**Total Gather Time**: ${formatMilliseconds(gatherStats.totalGatherTime)}`,
+        `**Average Gather Time**: ${formatMilliseconds(Math.round(gatherStats.totalGatherTime / gatherStats.totalGames))}`,
+        `**Average Tickets Left**: ${Math.round(gatherStats.totalTicketsLeft / gatherStats.totalGames)}`,
+    ]
+
+    let favouriteMaps = Object.keys(gatherStats.mapStats).map(mapName => {
+        return {mapName, ...gatherStats.mapStats[mapName]}
+    })
+
+    favouriteMaps = _.sortBy(favouriteMaps, mapStats => -mapStats.totalGames)
+    favouriteMaps = _.take(favouriteMaps, 3)
+    favouriteMaps = favouriteMaps.map(mapStat => `**${mapStat.mapName}**: ${mapStat.totalGames} games`)
+
+    return {
+        embed: {
+            fields: [
+                {
+                    name: "**Overall Stats**",
+                    value: overallStats.join("\n")
+                },
+                {
+                    name: "**Favourite Maps**",
+                    value: favouriteMaps.join("\n"),
+                },
+            ]
+        }
+    }
+}
+
+
 module.exports = {
-    getPlayerStats, formatGeneralStatsForPlayer
+    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats
 }

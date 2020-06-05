@@ -218,8 +218,6 @@ class Gather {
             this.serverPassword = password
 
             this.soldatClient.getServerInfo(serverInfo => {
-                this.currentMap = serverInfo["mapName"]
-
                 shuffledQueue.forEach(user => {
                     user.send({
                         embed: {
@@ -277,7 +275,9 @@ class Gather {
             bravoTickets: bravoTickets,
             startTime: this.startTime,
             endTime: this.endTime,
-            events: this.events
+            events: this.events,
+            numberOfBunkers: this.numberOfBunkers,
+            mapName: this.currentMap
         }).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
 
         this.discordChannel.send({
@@ -302,6 +302,7 @@ class Gather {
         this.inGameState = IN_GAME_STATES["GATHER_STARTED"]
         this.numberOfBunkers = numberOfBunkers
         this.startTime = Date.now()
+        this.currentMap = mapName
 
         this.discordChannel.send({
             embed: {

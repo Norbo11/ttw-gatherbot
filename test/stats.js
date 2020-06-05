@@ -104,7 +104,8 @@ describe('Stats', () => {
             wonGames: 1,
             lostGames: 0,
             totalCaps: 0,
-            totalConquers: 0
+            totalConquers: 0,
+            totalTicketsLeftInWonGames: 565
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 12 * 60e+3
@@ -121,7 +122,8 @@ describe('Stats', () => {
             lostGames: 0,
             totalKills: 1,
             totalCaps: 1,
-            totalConquers: 1
+            totalConquers: 1,
+            totalTicketsLeftInWonGames: 565
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 8 * 60e+3
@@ -141,6 +143,7 @@ describe('Stats', () => {
             wonGames: 0,
             lostGames: 1,
             totalDeaths: 1,
+            totalTicketsLeftInWonGames: 0
         })
         expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74.id]).eql({
             deaths: 1,
@@ -153,7 +156,61 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
+            totalTicketsLeftInWonGames: 0
         })
+    });
+
+    it('should return stats of gathers', async () => {
+        const games = [
+            {
+                alphaPlayers: ["Player1", "Player2"],
+                bravoPlayers: ["Player3", "Player4"],
+                alphaTickets: 565,
+                bravoTickets: 0,
+                startTime: 1000,
+                endTime: 1000 + 20 * 60e+3, // 20 minute game
+                events: [],
+                mapName: "ttw_one",
+            },
+            {
+                alphaPlayers: ["Player1", "Player2"],
+                bravoPlayers: ["Player3", "Player4"],
+                alphaTickets: 201,
+                bravoTickets: 0,
+                startTime: 1000 + 30 * 60e+3,
+                endTime: 1000 + 40 * 60e+3, // 10 minute game
+                events: [],
+                mapName: "ttw_two",
+            },
+            {
+                alphaPlayers: ["Player1", "Player2", "Player3"],
+                bravoPlayers: ["Player4", "Player5", "Player6"],
+                alphaTickets: 0,
+                bravoTickets: 1004,
+                startTime: 1000 + 60 * 60e+3,
+                endTime: 1000 + 75 * 60e+3, // 15 minute game
+                events: [],
+                mapName: "ttw_two",
+            },
+        ]
+
+        await Promise.all(games.map(async game => statsDb.insertGame(game)))
+
+        const gatherStats = await stats.getGatherStats(statsDb)
+        expect(gatherStats).containSubset({
+            totalGames: 3,
+            totalGatherTime: 45 * 60e+3,
+            totalTicketsLeft: 1770,
+            mapStats: {
+                ttw_one: {
+                    totalGames: 1
+                },
+                ttw_two: {
+                    totalGames: 2
+                }
+            }
+        })
+
     });
 });
 
@@ -161,13 +218,14 @@ describe('Stats Formatter', () => {
     it('should format player stats', async () => {
         const playerStats = {
             totalGatherTime: 45 * 60e+3,
-            totalGames: 2,
-            wonGames: 1,
+            totalGames: 3,
+            wonGames: 2,
             lostGames: 1,
             totalKills: 12,
             totalDeaths: 7,
             totalCaps: 2,
             totalConquers: 10,
+            totalTicketsLeftInWonGames: 2541,
             classStats: {
                 [TTW_CLASSES.GENERAL.id]: {
                     playingTime: 20 * 60e+3
@@ -203,12 +261,13 @@ describe('Stats Formatter', () => {
                     {
                         name: "**Overall Stats**",
                         value:
-                            "**Gathers Played**: 2\n" +
+                            "**Gathers Played**: 3\n" +
                             "**Total Gather Time**: 00:45:00\n" +
-                            "**Won/Lost**: 1/1 (50%)\n" +
+                            "**Won/Lost**: 2/1 (67%)\n" +
                             "**Kills/Deaths**: 12/7 (1.71)\n" +
-                            "**Caps**: 2 (1.00 per game)\n" +
-                            "**Bunker Conquers**: 10",
+                            "**Caps**: 2 (0.67 per game)\n" +
+                            "**Bunker Conquers**: 10\n" +
+                            "**Avg Tickets Left in Won Games**: 1271 tickets",
                     },
                     {
                         name: "**Favourite Weapons**",
@@ -231,5 +290,42 @@ describe('Stats Formatter', () => {
         })
     })
 
-    // TODO: Add a !mapstats command
+    it('should format gather stats', async () => {
+        const gatherStats = {
+            totalGames: 3,
+            totalGatherTime: 45 * 60e+3,
+            totalTicketsLeft: 1770,
+            mapStats: {
+                ttw_one: {
+                    totalGames: 1
+                },
+                ttw_two: {
+                    totalGames: 2
+                }
+            }
+        }
+
+        const formatted = stats.formatGatherStats(gatherStats)
+
+        expect(formatted).eql({
+            embed: {
+                fields: [
+                    {
+                        name: "**Overall Stats**",
+                        value:
+                            "**Gathers Played**: 3\n" +
+                            "**Total Gather Time**: 00:45:00\n" +
+                            "**Average Gather Time**: 00:15:00\n" +
+                            "**Average Tickets Left**: 590"
+                    },
+                    {
+                        name: "**Favourite Maps**",
+                        value:
+                            "**ttw_two**: 2 games\n" +
+                            "**ttw_one**: 1 games",
+                    },
+                ]
+            }
+        })
+    })
 })
