@@ -105,6 +105,8 @@ describe('Gather', () => {
         netClient.emit("data", "--- hwid C c")
         netClient.emit("data", "--- hwid D d")
 
+        currentGather.gatherStart()
+
         netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.GENERAL.id}`)
         expect(currentGather.events.length).equal(1)
         expect(currentGather.events[0]).containSubset({
@@ -228,6 +230,23 @@ describe('Gather', () => {
             victimTeam: "Alpha",
             victimDiscordId: "SethGecko",
             weaponId: SOLDAT_WEAPONS.AK_74.id,
+        })
+    });
+
+    it('should handle class switching prior to reset', async () => {
+        currentGather.currentSize = 4
+        currentGather.currentQueue = ["a", "b", "c", "d"]
+
+        currentGather.startGame()
+        netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.GENERAL.id}`)
+        currentGather.gatherStart('ttw_Test', 4, 5)
+
+        expect(currentGather.events.length).equal(1)
+        expect(currentGather.events[0]).containSubset({
+            timestamp: currentGather.startTime,
+            type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
+            discordId: "a",
+            newClassId: TTW_CLASSES.GENERAL.id
         })
     });
 });

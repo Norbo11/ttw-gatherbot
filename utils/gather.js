@@ -28,6 +28,7 @@ IN_GAME_STATES = {
 NOT_AUTHED_KICK_TIMER_SECONDS = 60
 
 
+// The IDs here must match the IDs in the TTW script
 const TTW_CLASSES = {
     LONG_RANGE_INFANTRY: {
         id: "1",
@@ -406,10 +407,14 @@ class Gather {
     }
 
     playerClassSwitch(playerName, classId) {
-        this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
-            discordId: this.translatePlayerNameToDiscordId(playerName),
-            newClassId: classId,
-        })
+
+        // Only register events if this gather has started; otherwise just add to the map.
+        if (this.gatherHasStarted()) {
+            this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
+                discordId: this.translatePlayerNameToDiscordId(playerName),
+                newClassId: classId,
+            })
+        }
 
         if (classId === TTW_CLASSES.GENERAL.id) {
             this.currentGeneral = playerName
