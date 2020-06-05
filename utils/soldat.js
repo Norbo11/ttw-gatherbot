@@ -9,6 +9,7 @@ const TEAMS = {
     "2": "Bravo"
 }
 
+// The IDs here are arbitrary - they don't necessarily match whatever IDs the game uses
 const SOLDAT_WEAPONS = {
     DESERT_EAGLES: {
         id: "1",
@@ -64,11 +65,15 @@ const SOLDAT_WEAPONS = {
     },
     M72_LAW: {
         id: "14",
-        formattedName: "M72 LAW"
+        formattedName: "LAW"
     },
     HANDS: {
         id: "15",
         formattedName: "Hands"
+    },
+    GRENADE: {
+        id: "16",
+        formattedName: "Grenade"
     },
 }
 
