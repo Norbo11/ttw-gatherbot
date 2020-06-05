@@ -191,7 +191,7 @@ const formatMilliseconds = (millis) => {
     return `${momentDuration.hours().toString().padStart(2, "0")}:${momentDuration.minutes().toString().padStart(2, "0")}:${momentDuration.seconds().toString().padStart(2, "0")}`
 }
 
-const formatGeneralStatsForPlayer = (playerStats) => {
+const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     const overallStats = [
         `**Gathers Played**: ${playerStats.totalGames}`,
         `**Total Gather Time**: ${formatMilliseconds(playerStats.totalGatherTime)}`,
@@ -222,7 +222,7 @@ const formatGeneralStatsForPlayer = (playerStats) => {
         embed: {
             fields: [
                 {
-                    name: "**Overall Stats**",
+                    name: `**Overall Stats for ${playerName}**`,
                     value: overallStats.join("\n")
                 },
                 {

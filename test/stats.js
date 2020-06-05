@@ -253,13 +253,13 @@ describe('Stats Formatter', () => {
             }
         }
 
-        const formatted = stats.formatGeneralStatsForPlayer(playerStats)
+        const formatted = stats.formatGeneralStatsForPlayer("Player", playerStats)
 
         expect(formatted).eql({
             embed: {
                 fields: [
                     {
-                        name: "**Overall Stats**",
+                        name: "**Overall Stats for Player**",
                         value:
                             "**Gathers Played**: 3\n" +
                             "**Total Gather Time**: 00:45:00\n" +
