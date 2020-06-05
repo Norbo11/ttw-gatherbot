@@ -265,7 +265,7 @@ const formatGatherStats = (gatherStats) => {
                 },
                 {
                     name: "**Favourite Maps**",
-                    value: favouriteMaps.join("\n"),
+                    value: favouriteMaps.length > 0 ? favouriteMaps.join("\n") : "No Gathers Played",
                 },
             ]
         }
