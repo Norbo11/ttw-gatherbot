@@ -313,7 +313,7 @@ const formatTopPlayers = (topPlayers, discordIdToUsername) => {
 
     const topPlayersByTotalGames = topPlayers.topPlayersByTotalGames.map(topPlayer => {
         const playerStats = topPlayer.playerStats
-        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalGames}`
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalGames} games`
     })
 
     return {

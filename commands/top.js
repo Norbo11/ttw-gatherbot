@@ -11,8 +11,8 @@ module.exports = {
 
             const discordIdToUsername = {}
             Promise.all(topPlayers.allDiscordIds.map(async (discordId) => {
-                const username = await this.discordChannel.client.fetchUser(discordId).username
-                discordIdToUsername[discordId] = username
+                const user = await client.fetchUser(discordId)
+                discordIdToUsername[discordId] = user.username
             })).then(() => {
                 message.channel.send(stats.formatTopPlayers(topPlayers, discordIdToUsername))
             })
