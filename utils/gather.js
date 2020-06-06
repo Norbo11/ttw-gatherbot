@@ -126,6 +126,8 @@ class Gather {
     authCodes = {}
     playerNameToHwid = {}
     hwidToDiscordId = {}
+
+    // TODO: Could get rid of this by adding a --- status command that revealed everyone's starting roles
     playerNameToCurrentClassId = {}
 
     constructor(soldatClient, discordChannel, statsDb, hwidToDiscordId, getCurrentTimestamp) {
@@ -270,11 +272,11 @@ class Gather {
             endTime: this.endTime,
             events: this.events,
             numberOfBunkers: this.numberOfBunkers,
-            mapName: this.currentMap
+            mapName: this.currentMap,
+            size: this.currentSize,
         }).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
 
-        this.inGameState = IN_GAME_STATES["NO_GATHER"]
-
+        this.inGameState = IN_GAME_STATES.NO_GATHER
         this.currentQueue = []
         this.currentRadioman = undefined
         this.currentGeneral = undefined
@@ -303,10 +305,14 @@ class Gather {
     }
 
     gatherStart(mapName, size, numberOfBunkers) {
+        this.startTime = this.getCurrentTimestamp()
         this.inGameState = IN_GAME_STATES["GATHER_STARTED"]
         this.numberOfBunkers = numberOfBunkers
-        this.startTime = this.getCurrentTimestamp()
         this.currentMap = mapName
+
+        // This clearing of events needs to happen on gather start rather than gather end, because sometimes
+        // there are multiple resets before the gather ends, and those events should be cleared.
+        this.events = []
 
         this.discordChannel.send({
             embed: {
@@ -484,6 +490,7 @@ class Gather {
 
     playerLeave(playerName) {
         delete this.playerNameToHwid[playerName]
+        delete this.playerNameToCurrentClassId[playerName]
     }
 
     playerInGameAuth(playerName, authCode) {
