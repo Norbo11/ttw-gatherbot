@@ -236,15 +236,15 @@ class SoldatClient {
         const listener = (data) => {
             if (!raw) {
                 data = data.toString()
-                logger.log.info(`Received active event from server: ${data.trim()}`)
+                logger.log.debug(`Received active event from server: ${data.trim()}`)
             } else {
-                logger.log.info(`Received active raw event from server: ${data}`)
+                logger.log.debug(`Received active raw event from server: ${data}`)
             }
 
             const result = processData(data)
 
             if (result !== undefined && result !== false) {
-                logger.log.info("Got the data that we wanted, removing listener.")
+                logger.log.info(`Got the data that we wanted: ${data}`)
 
                 this.client.removeListener("data", listener)
                 callback(result)

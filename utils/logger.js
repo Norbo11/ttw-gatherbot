@@ -6,7 +6,8 @@ const log = pino({
     prettyPrint: {
         levelFirst: true
     },
-    prettifier: require('pino-pretty')
+    prettifier: require('pino-pretty'),
+    level: "info"
 }, pino.destination())
 
 module.exports = {

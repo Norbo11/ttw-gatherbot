@@ -128,11 +128,12 @@ class Gather {
     hwidToDiscordId = {}
     playerNameToCurrentClassId = {}
 
-    constructor(soldatClient, discordChannel, statsDb, hwidToDiscordId) {
+    constructor(soldatClient, discordChannel, statsDb, hwidToDiscordId, getCurrentTimestamp) {
         this.soldatClient = soldatClient
         this.discordChannel = discordChannel
         this.statsDb = statsDb
         this.hwidToDiscordId = hwidToDiscordId
+        this.getCurrentTimestamp = getCurrentTimestamp
     }
 
     getPlayerStrings(delim = "\n") {
@@ -247,7 +248,7 @@ class Gather {
     }
 
     endGame(alphaTickets, bravoTickets, alphaCaps, bravoCaps) {
-        this.endTime = Date.now()
+        this.endTime = this.getCurrentTimestamp()
 
         const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings(" - ")
 
@@ -260,17 +261,6 @@ class Gather {
         const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
         const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
 
-        this.inGameState = IN_GAME_STATES["NO_GATHER"]
-
-        this.currentQueue = []
-        this.currentRadioman = undefined
-        this.currentGeneral = undefined
-        this.playerNameToCurrentClassId = {}
-        this.serverPassword = ""
-
-        this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
-        this.soldatClient.setServerPassword("")
-
         this.statsDb.insertGame({
             alphaPlayers: this.alphaTeam.map(user => user.id),
             bravoPlayers: this.bravoTeam.map(user => user.id),
@@ -282,6 +272,17 @@ class Gather {
             numberOfBunkers: this.numberOfBunkers,
             mapName: this.currentMap
         }).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
+
+        this.inGameState = IN_GAME_STATES["NO_GATHER"]
+
+        this.currentQueue = []
+        this.currentRadioman = undefined
+        this.currentGeneral = undefined
+        this.playerNameToCurrentClassId = {}
+        this.serverPassword = ""
+
+        this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
+        this.soldatClient.setServerPassword("")
 
         this.discordChannel.send({
             embed: {
@@ -304,7 +305,7 @@ class Gather {
     gatherStart(mapName, size, numberOfBunkers) {
         this.inGameState = IN_GAME_STATES["GATHER_STARTED"]
         this.numberOfBunkers = numberOfBunkers
-        this.startTime = Date.now()
+        this.startTime = this.getCurrentTimestamp()
         this.currentMap = mapName
 
         this.discordChannel.send({
@@ -389,7 +390,7 @@ class Gather {
     pushEvent(eventType, eventBody = {}) {
         const event = {
             type: eventType,
-            timestamp: Date.now(),
+            timestamp: this.getCurrentTimestamp(),
             ...eventBody
         }
 

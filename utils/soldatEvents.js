@@ -99,7 +99,7 @@ registerSoldatEventListeners = (gather, netClient) => {
                 try {
                     eventSpec.handler(gather, match)
                 } catch (e) {
-                    logger.log.error(`There was an error processing passive events from the server: ${e}`)
+                    logger.log.error(`There was an error processing passive events from the server: ${e.stack}`)
                 }
                 logger.log.info(`Received passive event from server: ${text}`)
             }

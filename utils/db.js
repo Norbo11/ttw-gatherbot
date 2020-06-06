@@ -44,7 +44,9 @@ class StatsDB {
     }
 
     async insertGame(game) {
+        logger.log.info("Saving game...")
         const result = await this.db.collection("Game").insertOne(game)
+        logger.log.info("Game saved!")
         return result.insertedId
     }
 
