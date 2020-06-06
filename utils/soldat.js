@@ -367,6 +367,10 @@ class SoldatClient {
         //     }
         // })
 
+        // I think I know why this happens
+        // Once you get authenticated with Steam you HWID changes to some steam identifier
+        // Good to know this for the future in case we need it
+
         this.listenForServerResponse(text => {
             const match = text.match(/--- hwid (?<hwid>.*?) (?<playerName>.*)/)
             if (match !== null && match.groups["playerName"] === playerName) {
