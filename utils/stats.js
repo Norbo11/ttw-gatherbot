@@ -73,13 +73,14 @@ getKillsAndDeathsPerWeapon = (discordId, events) => {
     const killEvents = _.filter(events, event =>
         event.type === TTW_EVENTS.PLAYER_KILL
         && event.killerDiscordId === discordId
-        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills
+        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills as kills
         && event.killerTeam !== event.victimTeam // Do not count friendly kills
     )
+
+    // Do count selfkills as deaths
     const deathEvents = _.filter(events, event =>
         event.type === TTW_EVENTS.PLAYER_KILL
         && event.victimDiscordId === discordId
-        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills
         && event.killerTeam !== event.victimTeam // Do not count friendly kills
     )
 
@@ -186,6 +187,33 @@ const getGatherStats = async (statsDb) => {
     }
 }
 
+const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
+    const discordIds = await statsDb.getAllDiscordIds()
+    const allPlayerStats = await Promise.all(discordIds.map(async discordId => {
+        return {
+            discordId,
+            playerStats: await getPlayerStats(statsDb, discordId)
+        }
+    }))
+    const playersWithEnoughGames = _.filter(allPlayerStats, player => player.playerStats.totalGames >= minimumGamesPlayed)
+
+    let topPlayersByWinRate = _.sortBy(playersWithEnoughGames, player => -(player.playerStats.wonGames / player.playerStats.totalGames))
+    topPlayersByWinRate = _.take(topPlayersByWinRate, 5)
+
+    // Take all players here
+    let topPlayersByTotalGames = _.sortBy(allPlayerStats, player => -player.playerStats.totalGames)
+    topPlayersByTotalGames = _.take(topPlayersByTotalGames, 5)
+
+    let topPlayersByKda = _.sortBy(playersWithEnoughGames, player => -(player.playerStats.totalKills / player.playerStats.totalDeaths))
+    topPlayersByKda = _.take(topPlayersByKda, 5)
+
+    const allDiscordIds = allPlayerStats.map(player => player.discordId)
+
+    return {
+        topPlayersByWinRate, topPlayersByTotalGames, topPlayersByKda, allDiscordIds
+    }
+}
+
 const formatMilliseconds = (millis) => {
     const momentDuration = moment.duration(millis)
     return `${momentDuration.hours().toString().padStart(2, "0")}:${momentDuration.minutes().toString().padStart(2, "0")}:${momentDuration.seconds().toString().padStart(2, "0")}`
@@ -272,7 +300,42 @@ const formatGatherStats = (gatherStats) => {
     }
 }
 
+const formatTopPlayers = (topPlayers, discordIdToUsername) => {
+    const topPlayersByWinRate = topPlayers.topPlayersByWinRate.map(topPlayer => {
+        const playerStats = topPlayer.playerStats
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.wonGames}/${playerStats.lostGames} (${Math.round(playerStats.wonGames / playerStats.totalGames * 100)}%)`
+    })
+
+    const topPlayersByKda = topPlayers.topPlayersByKda.map(topPlayer => {
+        const playerStats = topPlayer.playerStats
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`
+    })
+
+    const topPlayersByTotalGames = topPlayers.topPlayersByTotalGames.map(topPlayer => {
+        const playerStats = topPlayer.playerStats
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalGames}`
+    })
+
+    return {
+        embed: {
+            fields: [
+                {
+                    name: "**Top Players by Win Rate**",
+                    value: topPlayersByWinRate.length > 0 ? topPlayersByWinRate.join("\n") : "No Players"
+                },
+                {
+                    name: "**Top Players by KDA**",
+                    value: topPlayersByKda.length > 0 ? topPlayersByKda.join("\n") : "No Players"
+                },
+                {
+                    name: "**Most Addicted Players**",
+                    value: topPlayersByTotalGames.length > 0 ? topPlayersByTotalGames.join("\n") : "No Players"
+                },
+            ]
+        }
+    }
+}
 
 module.exports = {
-    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats
+    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats, getTopPlayers, formatTopPlayers
 }

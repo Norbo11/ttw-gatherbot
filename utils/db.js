@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const _ = require("lodash")
 const logger = require("./logger")
 
 const URL = 'mongodb://localhost:27017';
@@ -29,6 +30,17 @@ class StatsDB {
     async getAllGames() {
         const result = await this.db.collection("Game").find({})
         return result.toArray()
+    }
+
+    async getAllDiscordIds() {
+        const games = await this.getAllGames()
+        const discordIds = new Set()
+        games.forEach(game => {
+            game.alphaPlayers.forEach(player => discordIds.add(player))
+            game.bravoPlayers.forEach(player => discordIds.add(player))
+        })
+
+        return [...discordIds] // Convert back to an array so that we can use things like .map
     }
 
     async insertGame(game) {

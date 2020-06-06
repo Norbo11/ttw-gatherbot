@@ -210,8 +210,48 @@ describe('Stats', () => {
                 }
             }
         })
-
     });
+
+    it('should return stats of top players', async () => {
+        const games = [
+            {
+                alphaPlayers: ["Player1", "Player2"],
+                bravoPlayers: ["Player3", "Player4"],
+                alphaTickets: 565,
+                bravoTickets: 0,
+                startTime: 1000,
+                endTime: 1000 + 20 * 60e+3, // 20 minute game
+                events: [],
+                mapName: "ttw_one",
+            },
+            {
+                alphaPlayers: ["Player1", "Player2"],
+                bravoPlayers: ["Player3", "Player4"],
+                alphaTickets: 201,
+                bravoTickets: 0,
+                startTime: 1000 + 30 * 60e+3,
+                endTime: 1000 + 40 * 60e+3, // 10 minute game
+                events: [],
+                mapName: "ttw_two",
+            },
+            {
+                alphaPlayers: ["Player1", "Player2", "Player3"],
+                bravoPlayers: ["Player4", "Player5", "Player6"],
+                alphaTickets: 0,
+                bravoTickets: 1004,
+                startTime: 1000 + 60 * 60e+3,
+                endTime: 1000 + 75 * 60e+3, // 15 minute game
+                events: [],
+                mapName: "ttw_two",
+            },
+        ]
+
+        await Promise.all(games.map(async game => statsDb.insertGame(game)))
+
+        const topPlayers = await stats.getTopPlayers(statsDb, 0)
+        expect(topPlayers.topPlayersByWinRate.map(player => player.discordId)).eql(["Player5", "Player6", "Player1", "Player2", "Player4"])
+        expect(topPlayers.topPlayersByTotalGames.map(player => player.discordId)).eql(["Player1", "Player2", "Player3", "Player4", "Player5"])
+    })
 });
 
 describe('Stats Formatter', () => {
