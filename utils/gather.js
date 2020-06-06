@@ -261,12 +261,15 @@ class Gather {
         const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
 
         this.inGameState = IN_GAME_STATES["NO_GATHER"]
+
         this.currentQueue = []
+        this.currentRadioman = undefined
+        this.currentGeneral = undefined
+        this.playerNameToCurrentClassId = {}
+        this.serverPassword = ""
 
         this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
         this.soldatClient.setServerPassword("")
-
-        this.serverPassword = ""
 
         this.statsDb.insertGame({
             alphaPlayers: this.alphaTeam.map(user => user.id),
