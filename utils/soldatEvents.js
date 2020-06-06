@@ -69,21 +69,21 @@ PASSIVE_EVENTS = [
         ),
         condition: gather => gather.gatherInProgress()
     },
+    /* Events to process at any time */
     {
         pattern: /\[CMD\] (?<currentClass>.*?) \((?<playerName>.*?)\): \/(?<command>.*)/,
         handler: (gather, match) => gather.playerCommand(match.groups["playerName"], match.groups["currentClass"], match.groups["command"]),
-        condition: gather => gather.gatherInProgress()
-    },
-    {
-        pattern: /<New TTW> (?<playerName>.*?) assigned to task (?<classId>.*)/,
-        handler: (gather, match) => gather.playerClassSwitch(match.groups["playerName"], match.groups["classId"]),
-        // We need to track class changes even pre-reset, as people might choose their class before the reset.
-        condition: gather => gather.gatherInProgress()
+        condition: gather => true
     },
     {
         pattern: /\[(?<playerName>.*?)] !say (?<message>.*)/,
         handler: (gather, match) => gather.playerSay(match.groups["playerName"], match.groups["message"]),
-        condition: gather => gather.gatherInProgress()
+        condition: gather => true
+    },
+    {
+        pattern: /<New TTW> (?<playerName>.*?) assigned to task (?<classId>.*)/,
+        handler: (gather, match) => gather.playerClassSwitch(match.groups["playerName"], match.groups["classId"]),
+        condition: gather => true
     },
 ]
 
