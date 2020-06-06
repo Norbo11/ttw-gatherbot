@@ -33,18 +33,9 @@ const backloadGames = async () => {
     }
 
     const hwidToPlayerName = {}
+    const playerNameToHwid = {}
 
     let currentTimestamp = 0
-        // [
-        //     '[WP] NamelessWolf',   'oy',
-        //     'Norbo11',             'Janusz Korwin-Mikke',
-        //     'Universal Soldier',   'pavliko',
-        //     'Formax',              'hs|McWise',
-        //     'Deide',               '_North',
-        //     'Isojoenrannan hurja', '@vanatox is gay',
-        //     'SethGecko',           '[WP]-//power\\\\-',
-        //     'ORANG',               'Lets_Twist'
-        // ]
 
     const hwidToDiscordId = {
         '3FB9882DB49': "531450590505730049", // '[WP] NamelessWolf',
@@ -59,11 +50,10 @@ const backloadGames = async () => {
         '2EC8430D647': "124290386452545537", // 'Deide',
         '731C872E6BC': "449626154320789524", // 'Universal Soldier',
         '1C30F5F39F3': "71993252328247296",  // '_North',
-        '68EAF77CA53': 'Isojoenrannan hurja',
+        '68EAF77CA53': "428568369655054359", // 'Isojoenrannan hurja',
         '50EFFC48B92': "302151016600567808", // 'SethGecko',
         '451934B9692': "456828341555560458", // '[WP]-//power\\\\-',
         '2131DC7CC8C': "432994416710516758", // 'pavliko',
-        '32F2C7271C4': 'ORANG',
         '5A19489A1FD': "229683777935376384", // 'Lets_Twist',
         '7666259E411': "432994416710516758", // 'pavliko'
     }
@@ -72,7 +62,6 @@ const backloadGames = async () => {
     const currentGather = new gather.Gather(soldatClient, discordChannel, statsDb, hwidToDiscordId, () => currentTimestamp)
     soldatEvents.registerSoldatEventListeners(currentGather, netClient)
 
-
     const directory = "/home/norbz/gatherserverlogs"
 
     const fileNames = fs.readdirSync(directory)
@@ -80,8 +69,10 @@ const backloadGames = async () => {
     const logLinePattern = /^(?<timestamp>\d\d-\d\d-\d\d \d\d:\d\d:\d\d) (?<message>.*?)$/gm
     const playerJoinPattern = /(?<playerName>.*?) has joined (?<teamName>.*?) team/
     const playerLeavePattern = /(?<playerName>.*?) has left (?<teamName>.*?) team/
+    const playerJoinSpectatorsPattern = /(?<playerName>.*?) has joined spectators/
     const gatherStartPattern = /--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/
     const joiningGamePattern = /(?<playerName>.*) joining game .*? HWID:(?<hwid>.*)/
+    const loadConPattern = /^\/loadcon.*$/m
 
     const playersPerTeam = {
         alpha: [],
@@ -122,47 +113,59 @@ const backloadGames = async () => {
             const playerJoinMatch = message.match(playerJoinPattern)
 
             if (playerJoinMatch !== null) {
-                if (playerJoinMatch.groups["teamName"] === "alpha" && !playersPerTeam["alpha"].includes(playerJoinMatch.groups["playerName"])) {
-                    _.remove(playersPerTeam["bravo"], elem => elem === playerJoinMatch.groups["playerName"])
+                _.remove(playersPerTeam["bravo"], elem => elem === playerJoinMatch.groups["playerName"])
+                _.remove(playersPerTeam["alpha"], elem => elem === playerJoinMatch.groups["playerName"])
+
+                if (playerJoinMatch.groups["teamName"] === "alpha") {
                     playersPerTeam["alpha"].push(playerJoinMatch.groups["playerName"])
                 }
-                if (playerJoinMatch.groups["teamName"] === "bravo" && !playersPerTeam["bravo"].includes(playerJoinMatch.groups["playerName"])) {
-                    _.remove(playersPerTeam["alpha"], elem => elem === playerJoinMatch.groups["playerName"])
+
+                if (playerJoinMatch.groups["teamName"] === "bravo") {
                     playersPerTeam["bravo"].push(playerJoinMatch.groups["playerName"])
                 }
             }
+
             const playerLeaveMatch = message.match(playerLeavePattern)
-
             if (playerLeaveMatch !== null) {
-                if (playerLeaveMatch.groups["teamName"] === "alpha") {
-                    _.remove(playersPerTeam["alpha"], elem => elem === playerLeaveMatch.groups["playerName"])
-                }
-                if (playerLeaveMatch.groups["teamName"] === "bravo") {
-                    _.remove(playersPerTeam["bravo"], elem => elem === playerLeaveMatch.groups["playerName"])
-                }
+                _.remove(playersPerTeam["bravo"], elem => elem === playerLeaveMatch.groups["playerName"])
+                _.remove(playersPerTeam["alpha"], elem => elem === playerLeaveMatch.groups["playerName"])
             }
-            const gatherStartMatch = message.match(gatherStartPattern)
 
+            const playerJoinedSpectatorsMatch = message.match(playerJoinSpectatorsPattern)
+            if (playerJoinedSpectatorsMatch !== null) {
+                _.remove(playersPerTeam["bravo"], elem => elem === playerJoinedSpectatorsMatch.groups["playerName"])
+                _.remove(playersPerTeam["alpha"], elem => elem === playerJoinedSpectatorsMatch.groups["playerName"])
+            }
+
+            const gatherStartMatch = message.match(gatherStartPattern)
             if (gatherStartMatch !== null) {
                 currentGather.currentSize = playersPerTeam["alpha"].length
                 currentGather.currentQueue = [...playersPerTeam["alpha"], ...playersPerTeam["bravo"]].map(name => {
-                    return {id: name}
+                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
                 })
 
                 currentGather.inGameState = gather.IN_GAME_STATES["GATHER_PRE_RESET"]
 
                 currentGather.alphaTeam = [...playersPerTeam["alpha"]].map(name => {
-                    return {id: name}
+                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
                 })
                 currentGather.bravoTeam = [...playersPerTeam["bravo"]].map(name => {
-                    return {id: name}
+                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
                 })
+                currentGather.playerNameToHwid = playerNameToHwid
             }
 
             const joiningGameMatch = message.match(joiningGamePattern)
 
             if (joiningGameMatch !== null) {
                 hwidToPlayerName[joiningGameMatch.groups["hwid"]] = joiningGameMatch.groups["playerName"]
+                playerNameToHwid[joiningGameMatch.groups["playerName"]] = joiningGameMatch.groups["hwid"]
+            }
+
+            const loadConMatch = message.match(loadConPattern)
+            if (loadConMatch !== null) {
+                playersPerTeam.alpha = []
+                playersPerTeam.bravo = []
             }
 
             netClient.emit("data", message)
