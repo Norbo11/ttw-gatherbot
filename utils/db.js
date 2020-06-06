@@ -32,6 +32,11 @@ class StatsDB {
         return result.toArray()
     }
 
+    async getGameByStartTime(startTime) {
+        const result = await this.db.collection("Game").find({startTime})
+        return result.toArray()
+    }
+
     async getAllDiscordIds() {
         const games = await this.getAllGames()
         const discordIds = new Set()
