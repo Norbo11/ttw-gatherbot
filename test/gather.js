@@ -59,12 +59,12 @@ describe('Gather', () => {
         const hwidToDiscordId = await statsDb.getHwidToDiscordIdMap()
 
         soldatClient = new soldat.SoldatClient(netClient)
-        currentGather = new gather.Gather(soldatClient, discordChannel, statsDb, hwidToDiscordId)
+        currentGather = new gather.Gather(soldatClient, discordChannel, statsDb, hwidToDiscordId, () => Date.now())
         soldatEvents.registerSoldatEventListeners(currentGather, netClient)
     });
 
     afterEach(async () => {
-        mongoConn.dropDatabase()
+        await mongoConn.dropDatabase()
     })
 
     it('should handle gather beginnings and endings', async () => {

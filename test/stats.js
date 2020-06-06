@@ -8,6 +8,7 @@ const expect = chai.expect
 
 const sinon = require("sinon")
 const logger = require("../utils/logger")
+const moment = require("moment")
 
 const stats = require("../utils/stats")
 const db = require("../utils/db")
@@ -30,7 +31,7 @@ describe('Stats', () => {
     })
 
     afterEach(async () => {
-        conn.dropDatabase()
+        await conn.dropDatabase()
     })
 
     it('should return stats of players', async () => {
@@ -307,7 +308,9 @@ describe('Stats Formatter', () => {
                             "**Kills/Deaths**: 12/7 (1.71)\n" +
                             "**Caps**: 2 (0.67 per game)\n" +
                             "**Bunker Conquers**: 10\n" +
-                            "**Avg Tickets Left in Won Games**: 1271 tickets",
+                            "**Avg Tickets Left in Won Games**: 1271 tickets\n" +
+                            `**First Gather**: ${moment().format("DD-MM-YYYY")}\n` +
+                            "**Last Gather**: a few seconds ago",
                     },
                     {
                         name: "**Favourite Weapons**",
@@ -356,7 +359,9 @@ describe('Stats Formatter', () => {
                             "**Gathers Played**: 3\n" +
                             "**Total Gather Time**: 00:45:00\n" +
                             "**Average Gather Time**: 00:15:00\n" +
-                            "**Average Tickets Left**: 590"
+                            "**Average Tickets Left**: 590\n" +
+                            `**First Gather**: ${moment().format("DD-MM-YYYY")}\n` +
+                            "**Last Gather**: a few seconds ago",
                     },
                     {
                         name: "**Favourite Maps**",

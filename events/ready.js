@@ -17,7 +17,7 @@ module.exports = client => {
 
         const hwidToDiscordId = await currentStatsDb.getHwidToDiscordIdMap()
 
-        global.currentGather = new gather.Gather(currentSoldatClient, currentDiscordChannel, currentStatsDb, hwidToDiscordId)
+        global.currentGather = new gather.Gather(currentSoldatClient, currentDiscordChannel, currentStatsDb, hwidToDiscordId, () => Date.now())
         soldatEvents.registerSoldatEventListeners(currentGather, netClient)
     })
 }

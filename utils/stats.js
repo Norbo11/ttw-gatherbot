@@ -44,8 +44,8 @@ getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
         return classTime
     }
 
-    let lastEventTimestamp = events[0].timestamp
-    let lastClassId = events[0].newClassId
+    let lastEventTimestamp = classSwitchEvents[0].timestamp
+    let lastClassId = classSwitchEvents[0].newClassId
 
     const remainingEvents = _.takeRight(classSwitchEvents, classSwitchEvents.length - 1)
 
@@ -109,6 +109,8 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalTicketsLeftInWonGames = 0
     const classStats = {}
     const weaponStats = {}
+    let firstGameTimestamp = totalGames > 0 ? _.sortBy(games, game => game.startTime)[0].startTime : 0
+    let lastGameTimestamp = totalGames > 0 ? _.sortBy(games, game => -game.startTime)[0].startTime : 0
 
     Object.keys(TTW_CLASSES).forEach(classKey => {
         classStats[TTW_CLASSES[classKey].id] = {
@@ -159,7 +161,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
     return {
         totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
-        totalConquers, totalTicketsLeftInWonGames
+        totalConquers, totalTicketsLeftInWonGames, firstGameTimestamp, lastGameTimestamp
     }
 }
 
@@ -169,6 +171,8 @@ const getGatherStats = async (statsDb) => {
     let totalGames = games.length
     let totalGatherTime = _.sum(games.map(game => game.endTime - game.startTime))
     let totalTicketsLeft = _.sum(games.map(game => game.alphaTickets + game.bravoTickets))
+    let firstGameTimestamp = totalGames > 0 ? _.sortBy(games, game => game.startTime)[0].startTime : 0
+    let lastGameTimestamp = totalGames > 0 ? _.sortBy(games, game => -game.startTime)[0].startTime : 0
 
     let mapStats = {}
 
@@ -183,7 +187,7 @@ const getGatherStats = async (statsDb) => {
     })
 
     return {
-        totalGames, totalGatherTime, totalTicketsLeft, mapStats
+        totalGames, totalGatherTime, totalTicketsLeft, mapStats, firstGameTimestamp, lastGameTimestamp
     }
 }
 
@@ -228,6 +232,8 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
         `**Caps**: ${playerStats.totalCaps} (${(playerStats.totalCaps / playerStats.totalGames).toFixed(2)} per game)`,
         `**Bunker Conquers**: ${playerStats.totalConquers}`,
         `**Avg Tickets Left in Won Games**: ${(playerStats.totalTicketsLeftInWonGames / playerStats.wonGames).toFixed(0)} tickets`,
+        `**First Gather**: ${moment(playerStats.firstGameTimestamp).format("DD-MM-YYYY")}`,
+        `**Last Gather**: ${moment(playerStats.lastGameTimestamp).from(moment())}`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {
@@ -274,6 +280,8 @@ const formatGatherStats = (gatherStats) => {
         `**Total Gather Time**: ${formatMilliseconds(gatherStats.totalGatherTime)}`,
         `**Average Gather Time**: ${formatMilliseconds(Math.round(gatherStats.totalGatherTime / gatherStats.totalGames))}`,
         `**Average Tickets Left**: ${Math.round(gatherStats.totalTicketsLeft / gatherStats.totalGames)}`,
+        `**First Gather**: ${moment(gatherStats.firstGameTimestamp).format("DD-MM-YYYY")}`,
+        `**Last Gather**: ${moment(gatherStats.lastGameTimestamp).from(moment())}`,
     ]
 
     let favouriteMaps = Object.keys(gatherStats.mapStats).map(mapName => {
@@ -281,7 +289,7 @@ const formatGatherStats = (gatherStats) => {
     })
 
     favouriteMaps = _.sortBy(favouriteMaps, mapStats => -mapStats.totalGames)
-    favouriteMaps = _.take(favouriteMaps, 3)
+    favouriteMaps = _.take(favouriteMaps, 5)
     favouriteMaps = favouriteMaps.map(mapStat => `**${mapStat.mapName}**: ${mapStat.totalGames} games`)
 
     return {
