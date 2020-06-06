@@ -34,12 +34,12 @@ getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
         classTime[TTW_CLASSES[classKey].id] = 0
     })
 
-    events = _.filter(events, event =>
+    const classSwitchEvents = _.filter(events, event =>
         event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH
         && event.discordId === discordId
     )
 
-    if (events.length === 0) {
+    if (classSwitchEvents.length === 0) {
         logger.log.warn(`Got no class switch events for player ${discordId}! Gather start time: ${startTime}`)
         return classTime
     }
@@ -47,9 +47,9 @@ getTimePlayedPerClass = (startTime, endTime, discordId, events) => {
     let lastEventTimestamp = events[0].timestamp
     let lastClassId = events[0].newClassId
 
-    events = _.takeRight(events, events.length - 1)
+    const remainingEvents = _.takeRight(classSwitchEvents, classSwitchEvents.length - 1)
 
-    events.forEach(event => {
+    remainingEvents.forEach(event => {
         classTime[lastClassId] += event.timestamp - lastEventTimestamp
         lastEventTimestamp = event.timestamp
         lastClassId = event.newClassId
