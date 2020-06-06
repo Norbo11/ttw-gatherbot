@@ -109,8 +109,6 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalTicketsLeftInWonGames = 0
     const classStats = {}
     const weaponStats = {}
-    let firstGameTimestamp = totalGames > 0 ? _.sortBy(games, game => game.startTime)[0].startTime : 0
-    let lastGameTimestamp = totalGames > 0 ? _.sortBy(games, game => -game.startTime)[0].startTime : 0
 
     Object.keys(TTW_CLASSES).forEach(classKey => {
         classStats[TTW_CLASSES[classKey].id] = {
@@ -158,6 +156,9 @@ getPlayerStats = async (statsDb, discordId) => {
 
         totalGatherTime += gameTime
     })
+
+    let firstGameTimestamp = totalGames > 0 ? _.sortBy(games, game => game.startTime)[0].startTime : 0
+    let lastGameTimestamp = totalGames > 0 ? _.sortBy(games, game => -game.startTime)[0].startTime : 0
 
     return {
         totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
@@ -241,7 +242,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     })
 
     favouriteWeapons = _.sortBy(favouriteWeapons, weaponStat => -weaponStat.kills)
-    favouriteWeapons = _.take(favouriteWeapons, 3)
+    favouriteWeapons = _.take(favouriteWeapons, 5)
     favouriteWeapons = favouriteWeapons.map(weaponStat => `**${weaponStat.weaponName}**: ${weaponStat.kills} kills`)
 
     let favouriteClasses = Object.keys(playerStats.classStats).map(classId => {
@@ -249,7 +250,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     })
 
     favouriteClasses = _.sortBy(favouriteClasses, classStat => -classStat.playingTime)
-    favouriteClasses = _.take(favouriteClasses, 3)
+    favouriteClasses = _.take(favouriteClasses, 5)
     favouriteClasses = favouriteClasses.map(classStat => `**${classStat.className}**: ${formatMilliseconds(classStat.playingTime)}`)
 
     return {
