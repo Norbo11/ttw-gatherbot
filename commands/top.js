@@ -11,8 +11,12 @@ module.exports = {
 
             const discordIdToUsername = {}
             Promise.all(topPlayers.allDiscordIds.map(async (discordId) => {
-                const user = await client.fetchUser(discordId)
-                discordIdToUsername[discordId] = user.username
+                try {
+                    const user = await client.fetchUser(discordId)
+                    discordIdToUsername[discordId] = user.username
+                } catch (e) {
+                    logger.log.warn(`Could not find user with discord ID ${discordId}`)
+                }
             })).then(() => {
                 message.channel.send(stats.formatTopPlayers(topPlayers, discordIdToUsername))
             })
