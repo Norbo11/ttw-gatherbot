@@ -56,6 +56,7 @@ const backloadGames = async () => {
         '2131DC7CC8C': "432994416710516758", // 'pavliko',
         '5A19489A1FD': "229683777935376384", // 'Lets_Twist',
         '7666259E411': "432994416710516758", // 'pavliko'
+        '152A53F5036': "292100010882105346", // 'Mojo'
     }
 
     const soldatClient = new soldat.SoldatClient(netClient)
