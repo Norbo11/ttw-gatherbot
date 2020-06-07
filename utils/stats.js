@@ -19,12 +19,20 @@ getCaps = (discordId, events) => {
 }
 
 getNumberOfTimesConquered = (discordId, events) => {
-    events = _.filter(events, event =>
-        event.type === TTW_EVENTS.BUNKER_CONQUER
-        && event.discordId === discordId
-    )
+    let currentGeneral = undefined
+    let totalConquers = 0
 
-    return events.length
+    events.forEach(event => {
+        if (event.type === TTW_EVENTS.PLAYER_CLASS_SWITCH && event.newClassId === TTW_CLASSES.GENERAL.id) {
+            currentGeneral = event.discordId
+        }
+
+        if (event.type === TTW_EVENTS.BUNKER_CONQUER && currentGeneral === discordId) {
+            totalConquers += 1
+        }
+    })
+
+    return totalConquers
 }
 
 getTimePlayedPerClass = (startTime, endTime, discordId, events) => {

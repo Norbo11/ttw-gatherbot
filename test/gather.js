@@ -196,14 +196,12 @@ describe('Gather', () => {
             discordId: "SethGecko",
             newClassId: TTW_CLASSES.GENERAL.id
         })
-        expect(currentGather.currentGeneral).equal("SethGecko")
 
         netClient.emit("data", "--- conquer 1 100 500 3 5 0")
         expect(currentGather.events.length).equal(2)
         expect(currentGather.events[1]).containSubset(
             {
                 type: TTW_EVENTS.BUNKER_CONQUER,
-                discordId: "SethGecko",
                 conqueringTeam: "Alpha",
                 alphaTickets: 100,
                 bravoTickets: 500,

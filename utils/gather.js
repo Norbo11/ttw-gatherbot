@@ -119,8 +119,6 @@ class Gather {
     events = []
     startTime = undefined
     endTime = undefined
-    currentGeneral = undefined
-    currentRadioman = undefined
     currentMap = undefined
     kickTimers = {}
     authCodes = {}
@@ -278,8 +276,6 @@ class Gather {
 
         this.inGameState = IN_GAME_STATES.NO_GATHER
         this.currentQueue = []
-        this.currentRadioman = undefined
-        this.currentGeneral = undefined
         this.playerNameToCurrentClassId = {}
         this.serverPassword = ""
 
@@ -427,20 +423,11 @@ class Gather {
             })
         }
 
-        if (classId === TTW_CLASSES.GENERAL.id) {
-            this.currentGeneral = playerName
-        }
-
-        if (classId === TTW_CLASSES.RADIOMAN.id) {
-            this.currentRadioman = playerName
-        }
-
         this.playerNameToCurrentClassId[playerName] = classId
     }
 
     conquer(conqueringTeam, alphaTickets, bravoTickets, currentAlphaBunker, currentBravoBunker, sabotaging) {
         this.pushEvent(TTW_EVENTS.BUNKER_CONQUER, {
-            discordId: this.translatePlayerNameToDiscordId(this.currentGeneral),
             conqueringTeam,
             alphaTickets,
             bravoTickets,
