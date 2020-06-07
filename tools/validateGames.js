@@ -27,6 +27,10 @@ const main = async () => {
             throw new Error()
         }
 
+        if (game.mapName.length === 0) {
+            throw new Error()
+        }
+
         game.events.forEach(event => {
             if (event.timestamp < game.startTime) {
                 throw new Error()
