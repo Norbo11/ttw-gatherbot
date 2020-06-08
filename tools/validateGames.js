@@ -5,9 +5,8 @@ const _ = require("lodash")
 
 
 const main = async () => {
-    const mongoClient = await MongoClient.connect("mongodb://localhost:27017")
-    const mongoConn = mongoClient.db("BackloadDB")
-    const statsDb = new db.StatsDB(mongoConn)
+    const dbConn = await db.getDbConnection()
+    const statsDb = new db.StatsDB(dbConn)
 
     const discordIds = await statsDb.getAllDiscordIds()
     console.log(util.inspect(discordIds))
@@ -40,6 +39,8 @@ const main = async () => {
             }
         })
     })
+
+    console.log(`${games.length} games validated.`)
 }
 
 (async () => await main())()

@@ -5,9 +5,8 @@ const _ = require("lodash")
 
 
 const main = async () => {
-    const mongoClient = await MongoClient.connect("mongodb://localhost:27017")
-    const mongoConn = mongoClient.db("BackloadDB")
-    const statsDb = new db.StatsDB(mongoConn)
+    const dbConn = await db.getDbConnection()
+    const statsDb = new db.StatsDB(dbConn)
 
     const game = await statsDb.getGameByStartTime(1590434126000)
     // const games = await statsDb.getAllGames()

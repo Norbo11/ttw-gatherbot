@@ -13,10 +13,8 @@ const soldatEvents = require("../utils/soldatEvents")
 const db = require("../utils/db")
 
 const backloadGames = async () => {
-
-    const mongoClient = await MongoClient.connect("mongodb://localhost:27017")
-    const mongoConn = mongoClient.db("BackloadDB")
-    const statsDb = new db.StatsDB(mongoConn)
+    const dbConn = await db.getDbConnection()
+    const statsDb = new db.StatsDB(dbConn)
 
     const netClient = new events.EventEmitter()
     netClient.write = (data) => {
@@ -98,6 +96,8 @@ const backloadGames = async () => {
 
     sortedFileNames = _.sortBy(sortedFileNames, file => file.fileTimestamp)
     sortedFileNames = sortedFileNames.map(file => file.fileName)
+
+    // sortedFileNames = ["consolelog-20-05-31-03.txt"]
 
     sortedFileNames.forEach(fileName => {
         console.log(`Reading ${fileName}`)
