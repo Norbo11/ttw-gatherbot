@@ -20,6 +20,7 @@ module.exports = {
         }
 
         discordUsers.forEach(user => {
+            logger.log.info(`Fetching stats for ${user.username}`)
             stats.getPlayerStats(currentStatsDb, user.id).then((playerStats) => {
                 message.channel.send(stats.formatGeneralStatsForPlayer(user.username, playerStats))
             })
