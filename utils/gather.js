@@ -248,6 +248,11 @@ class Gather {
     }
 
     endGame(alphaTickets, bravoTickets, alphaCaps, bravoCaps) {
+        if (alphaTickets === 0 && bravoTickets === 0 && alphaCaps === 0 && bravoCaps === 0) {
+            logger.log.warn("Bogus gather end event encountered, ignoring.")
+            return
+        }
+
         this.endTime = this.getCurrentTimestamp()
 
         const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings(" - ")
@@ -319,16 +324,20 @@ class Gather {
         })
 
         // When the gather starts, we push a class switch event for every player based on whatever we know they have
-        // picked up to this point. This is because we can't assume that players haven't chosen their task prior to the
-        // reset, when we don't want to process any events, as the gather hasn't started yet. This ensures that every
-        // gather has at least 1 class switch event for every player, for proper stats to be calculated.
+        // picked up to this point. This is because we players are able to pick their task prior to the gather being
+        // reset. This ensures that every gather has at least 1 class switch event for every player, for proper stats
+        // to be calculated. Its okay to not clear this list across gathers, at technically a player could already
+        // be on the server and have chosen his/her class before the gather starts.
 
         _.forEach(this.playerNameToCurrentClassId, (classId, playerName) => {
-            this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
-                timestamp: this.startTime,
-                discordId: this.translatePlayerNameToDiscordId(playerName),
-                newClassId: classId,
-            })
+            const discordId = this.translatePlayerNameToDiscordId(playerName)
+            if (this.alphaTeam.map(user => user.id).includes(discordId) || this.bravoTeam.map(user => user.id).includes(discordId)) {
+                this.pushEvent(TTW_EVENTS.PLAYER_CLASS_SWITCH, {
+                    timestamp: this.startTime,
+                    discordId: discordId,
+                    newClassId: classId,
+                })
+            }
         })
     }
 
@@ -477,7 +486,6 @@ class Gather {
 
     playerLeave(playerName) {
         delete this.playerNameToHwid[playerName]
-        delete this.playerNameToCurrentClassId[playerName]
     }
 
     playerInGameAuth(playerName, authCode) {
