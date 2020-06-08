@@ -8,6 +8,7 @@ const log = pino({
     },
     prettifier: require('pino-pretty'),
     level: "info"
+    // level: "silent"
 }, pino.destination())
 
 module.exports = {
