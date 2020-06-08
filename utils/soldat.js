@@ -244,7 +244,7 @@ class SoldatClient {
             const result = processData(data)
 
             if (result !== undefined && result !== false) {
-                logger.log.info(`Got the data that we wanted: ${data}`)
+                logger.log.debug(`Got the data that we wanted: ${data}`)
 
                 this.client.removeListener("data", listener)
                 callback(result)
@@ -255,7 +255,7 @@ class SoldatClient {
 
         // TODO: Currently this removal happens even if the data is found. The extra logging message is okay for now.
         setTimeout(() => {
-            logger.log.info(`${timeout}ms has passed, removing listener.`)
+            logger.log.debug(`${timeout}ms has passed, removing listener.`)
             this.client.removeListener("data", listener)
         }, timeout)
     }
@@ -273,9 +273,9 @@ class SoldatClient {
                 if (refreshXData.length !== 2002) {
                     logger.log.error(`REFRESHX packet is not of the expected length (${refreshXData.length} bytes instead of 2002)`)
                 }
-                logger.log.info(`REFRESHX length is ${refreshXData.length}`)
+                logger.log.debug(`REFRESHX length is ${refreshXData.length}`)
                 const parsedInfo = soldatRefreshxParser.parse(refreshXData)
-                logger.log.info("Received and parsed data from REFRESHX")
+                logger.log.debug("Received and parsed data from REFRESHX")
                 return parsedInfo
             }
             return false
