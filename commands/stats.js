@@ -1,12 +1,15 @@
 const logger = require("../utils/logger")
-const utils = require("../utils/commandUtils")
 const stats = require("../utils/stats")
+const utils = require("util")
 
 
 module.exports = {
     aliases: ["stats"],
     description: "Show yours or someone else's personal gather statistics (use @mentions).",
     execute(client, message, args) {
+        logger.log.info(`Mentioned members: ${utils.inspect(message.mentions.members)}`)
+        logger.log.info(`Mentioned users: ${utils.inspect(message.mentions.users)}`)
+
         let discordUsers = []
 
         if (args.length === 0) {
