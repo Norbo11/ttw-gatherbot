@@ -18,6 +18,7 @@ for (const file of commandFiles) {
 
 client.on("message", (...args) => message(client, ...args))
 client.once("ready", (...args) => ready(client, ...args))
+client.on("ready", (...args) => logger.log.info("Received Discord ready event."))
 client.login(process.env.BOT_TOKEN)
 
 cleanUp =  () => {
