@@ -1,4 +1,5 @@
 const logger = require("./logger")
+const gather = require("../utils/gather")
 
 
 displayGatherStatus = (message) => {
@@ -7,10 +8,10 @@ displayGatherStatus = (message) => {
 
             let description = undefined;
 
-            if (currentGather.inGameState === currentGather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
+            if (currentGather.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
                 description = `**Gather Waiting for Reset**`
 
-            } else if (currentGather.inGameState === currentGather.IN_GAME_STATES["GATHER_STARTED"]) {
+            } else if (currentGather.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
                 description = `**Gather In Progress**\n` +
                     `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
                     `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
