@@ -3,6 +3,8 @@ const constants = require("./constants")
 const logger = require("./utils/logger")
 const Discord = require("discord.js")
 const fs = require("fs")
+const message = require("events/message")
+const ready = require("events/ready")
 
 const client = new Discord.Client()
 client.commands = []
@@ -14,14 +16,8 @@ for (const file of commandFiles) {
     client.commands.push(command);
 }
 
-fs.readdir("./events/", (err, files) => {
-    files.forEach(file => {
-        const eventHandler = require(`./events/${file}`)
-        const eventName = file.split(".")[0]
-        client.on(eventName, (...args) => eventHandler(client, ...args))
-    })
-})
-
+client.on("message", (...args) => message(client, ...args))
+client.once("ready", (...args) => ready(client, ...args))
 client.login(process.env.BOT_TOKEN)
 
 cleanUp =  () => {
