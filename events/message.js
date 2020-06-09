@@ -11,7 +11,7 @@ module.exports = (client, message) => {
     logger.log.info(`1: ${message.content}`)
 
     // Do not process messages that don't come from the designated channel
-    if (message.channel !== currentDiscordChannel) return;
+    if (message.channel.id !== currentDiscordChannel.id) return;
 
     logger.log.info(`2: ${message.content}`)
 
