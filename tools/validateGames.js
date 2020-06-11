@@ -18,7 +18,7 @@ const main = async () => {
             throw new Error()
         }
 
-        if (game.size !== game.alphaPlayers.length){
+        if (game.size !== game.alphaPlayers.length * 2) {
             throw new Error()
         }
 
