@@ -23,6 +23,23 @@ const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
 const soldatEvents = require("../utils/soldatEvents")
 
 
+function fourPlayersJoin(currentGather, netClient) {
+    // These tasks go to sleep until they receive the right events from the server
+    currentGather.playerJoin("a")
+    currentGather.playerJoin("b")
+    currentGather.playerJoin("c")
+    currentGather.playerJoin("d")
+
+    // Emitting an event goes through all listeners synchronously. These below "emit" calls block while they
+    // complete the playerJoin tasks above (all of which have registered some listeners and are waiting for data
+    // to arrive).
+    netClient.emit("data", "--- hwid A a")
+    netClient.emit("data", "--- hwid B b")
+    netClient.emit("data", "--- hwid C c")
+    netClient.emit("data", "--- hwid D d")
+}
+
+
 describe('Gather', () => {
     let currentGather = undefined
     let soldatClient = undefined
@@ -90,20 +107,7 @@ describe('Gather', () => {
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
-
-        // These tasks go to sleep until they receive the right events from the server
-        currentGather.playerJoin("a")
-        currentGather.playerJoin("b")
-        currentGather.playerJoin("c")
-        currentGather.playerJoin("d")
-
-        // Emitting an event goes through all listeners synchronously. These below "emit" calls block while they
-        // complete the playerJoin tasks above (all of which have registered some listeners and are waiting for data
-        // to arrive).
-        netClient.emit("data", "--- hwid A a")
-        netClient.emit("data", "--- hwid B b")
-        netClient.emit("data", "--- hwid C c")
-        netClient.emit("data", "--- hwid D d")
+        fourPlayersJoin(currentGather, netClient);
 
         currentGather.gatherStart()
 
@@ -233,9 +237,12 @@ describe('Gather', () => {
 
     it('should handle class switching prior to reset', async () => {
         currentGather.currentSize = 4
-        currentGather.currentQueue = ["a", "b", "c", "d"]
+        currentGather.currentQueue = [{id: "1"}, {id: "2"}, {id: "3"}, {id: "4"}]
+        currentGather.alphaTeam = [{id: "1"}, {id: "2"}]
+        currentGather.bravoTeam = [{id: "3"}, {id: "4"}]
 
         currentGather.startGame()
+        fourPlayersJoin(currentGather, netClient);
         netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.GENERAL.id}`)
         currentGather.gatherStart('ttw_Test', 4, 5)
 
@@ -243,7 +250,7 @@ describe('Gather', () => {
         expect(currentGather.events[0]).containSubset({
             timestamp: currentGather.startTime,
             type: TTW_EVENTS.PLAYER_CLASS_SWITCH,
-            discordId: "a",
+            discordId: "1",
             newClassId: TTW_CLASSES.GENERAL.id
         })
     });

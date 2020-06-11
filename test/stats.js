@@ -42,6 +42,7 @@ describe('Stats', () => {
             bravoTickets: 0,
             startTime: 1000,
             endTime: 1000 + 20 * 60e+3, // 20 minute game
+            size: 4,
             events: [
                 {
                     timestamp: 1000,
@@ -106,7 +107,12 @@ describe('Stats', () => {
             lostGames: 0,
             totalCaps: 0,
             totalConquers: 0,
-            totalTicketsLeftInWonGames: 565
+            sizeStats: {
+                "4": {
+                    totalTicketsLeftInWonGames: 565,
+                    totalGames: 1
+                }
+            },
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 12 * 60e+3
@@ -124,7 +130,12 @@ describe('Stats', () => {
             totalKills: 1,
             totalCaps: 1,
             totalConquers: 1,
-            totalTicketsLeftInWonGames: 565
+            sizeStats: {
+                "4": {
+                    totalTicketsLeftInWonGames: 565,
+                    totalGames: 1
+                }
+            },
         })
         expect(playerStats.classStats[TTW_CLASSES.GENERAL.id]).eql({
             playingTime: 8 * 60e+3
@@ -143,8 +154,12 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
-            totalDeaths: 1,
-            totalTicketsLeftInWonGames: 0
+            sizeStats: {
+                "4": {
+                    totalTicketsLeftInWonGames: 0,
+                    totalGames: 1
+                }
+            },
         })
         expect(playerStats.weaponStats[SOLDAT_WEAPONS.AK_74.id]).eql({
             deaths: 1,
@@ -157,7 +172,12 @@ describe('Stats', () => {
             totalGames: 1,
             wonGames: 0,
             lostGames: 1,
-            totalTicketsLeftInWonGames: 0
+            sizeStats: {
+                "4": {
+                    totalTicketsLeftInWonGames: 0,
+                    totalGames: 1
+                }
+            },
         })
     });
 
@@ -266,7 +286,16 @@ describe('Stats Formatter', () => {
             totalDeaths: 7,
             totalCaps: 2,
             totalConquers: 10,
-            totalTicketsLeftInWonGames: 2541,
+            sizeStats: {
+                6: {
+                    totalTicketsLeftInWonGames: 2541,
+                    totalGames: 1,
+                },
+                4: {
+                    totalTicketsLeftInWonGames: 521,
+                    totalGames: 2
+                }
+            },
             classStats: {
                 [TTW_CLASSES.GENERAL.id]: {
                     playingTime: 20 * 60e+3
@@ -308,7 +337,6 @@ describe('Stats Formatter', () => {
                             "**Kills/Deaths**: 12/7 (1.71)\n" +
                             "**Caps**: 2 (0.67 per game)\n" +
                             "**Bunker Conquers**: 10\n" +
-                            "**Avg Tickets Left in Won Games**: 1271 tickets\n" +
                             `**First Gather**: ${moment().format("DD-MM-YYYY")}\n` +
                             "**Last Gather**: a few seconds ago",
                     },
@@ -327,6 +355,13 @@ describe('Stats Formatter', () => {
                             "**General**: 00:20:00\n" +
                             "**Artillery**: 00:00:00",
                         inline: true,
+                    },
+                    {
+                        name: "**Avg Tickets Left in Won Games**",
+                        value:
+                            "**Size 6**: 2541 tickets\n" +
+                            "**Size 4**: 261 tickets",
+                        inline: false,
                     },
                 ]
             }

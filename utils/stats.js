@@ -114,9 +114,9 @@ getPlayerStats = async (statsDb, discordId) => {
     let totalGatherTime = 0
     let totalCaps = 0
     let totalConquers = 0
-    let totalTicketsLeftInWonGames = 0
     const classStats = {}
     const weaponStats = {}
+    const sizeStats = {}
 
     Object.keys(TTW_CLASSES).forEach(classKey => {
         classStats[TTW_CLASSES[classKey].id] = {
@@ -137,12 +137,21 @@ getPlayerStats = async (statsDb, discordId) => {
         const winningTeam = game.alphaTickets > game.bravoTickets ? "Alpha" : "Bravo"
         const playerTeam = game.alphaPlayers.includes(discordId) ? "Alpha" : "Bravo"
 
+        if (!(game.size in sizeStats)) {
+            sizeStats[game.size] = {
+                totalGames: 0,
+                totalTicketsLeftInWonGames: 0
+            }
+        }
+
         if (winningTeam === playerTeam) {
             wonGames += 1
-            totalTicketsLeftInWonGames += game[winningTeam.toLowerCase() + "Tickets"]
+            sizeStats[game.size].totalTicketsLeftInWonGames += game[winningTeam.toLowerCase() + "Tickets"]
         } else {
             lostGames += 1
         }
+
+        sizeStats[game.size].totalGames += 1
 
         totalCaps += getCaps(discordId, game.events)
         totalConquers += getNumberOfTimesConquered(discordId, game.events)
@@ -170,7 +179,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
     return {
         totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
-        totalConquers, totalTicketsLeftInWonGames, firstGameTimestamp, lastGameTimestamp
+        totalConquers, sizeStats, firstGameTimestamp, lastGameTimestamp
     }
 }
 
@@ -240,7 +249,6 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
         `**Kills/Deaths**: ${playerStats.totalKills}/${playerStats.totalDeaths} (${(playerStats.totalKills / playerStats.totalDeaths).toFixed(2)})`,
         `**Caps**: ${playerStats.totalCaps} (${(playerStats.totalCaps / playerStats.totalGames).toFixed(2)} per game)`,
         `**Bunker Conquers**: ${playerStats.totalConquers}`,
-        `**Avg Tickets Left in Won Games**: ${(playerStats.totalTicketsLeftInWonGames / playerStats.wonGames).toFixed(0)} tickets`,
         `**First Gather**: ${moment(playerStats.firstGameTimestamp).format("DD-MM-YYYY")}`,
         `**Last Gather**: ${moment(playerStats.lastGameTimestamp).from(moment())}`,
     ]
@@ -261,6 +269,13 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     favouriteClasses = _.take(favouriteClasses, 5)
     favouriteClasses = favouriteClasses.map(classStat => `**${classStat.className}**: ${formatMilliseconds(classStat.playingTime)}`)
 
+    let averageTickets = Object.keys(playerStats.sizeStats).map(size => {
+        return {size: size, ...playerStats.sizeStats[size]}
+    })
+    averageTickets = _.sortBy(averageTickets, sizeStat => -sizeStat.size)
+    averageTickets = _.take(averageTickets, 5)
+    averageTickets = averageTickets.map(sizeStat => `**Size ${sizeStat.size}**: ${Math.round(sizeStat.totalTicketsLeftInWonGames / sizeStat.totalGames)} tickets`)
+
     return {
         embed: {
             fields: [
@@ -277,6 +292,11 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
                     name: "**Favourite Classes**",
                     value: favouriteClasses.join("\n"),
                     inline: true
+                },
+                {
+                    name: "**Avg Tickets Left in Won Games**",
+                    value: averageTickets.join("\n"),
+                    inline: false
                 },
             ]
         }
