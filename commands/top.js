@@ -18,8 +18,13 @@ module.exports = {
                     logger.log.warn(`Could not find user with discord ID ${discordId}`)
                 }
             })).then(() => {
-                message.channel.send(stats.formatTopPlayers(topPlayers, discordIdToUsername))
+                if (args.length === 1) {
+                    const weaponName = args[0]
+                    message.channel.send(stats.formatTopPlayersByWeapon(topPlayers, discordIdToUsername, weaponName))
+                } else if (args.length === 0) {
+                    message.channel.send(stats.formatTopPlayers(topPlayers, discordIdToUsername))
+                }
             })
         })
-    },
+    }
 };

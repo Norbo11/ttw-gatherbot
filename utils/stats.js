@@ -229,10 +229,19 @@ const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
     let topPlayersByKda = _.sortBy(playersWithEnoughGames, player => -(player.playerStats.totalKills / player.playerStats.totalDeaths))
     topPlayersByKda = _.take(topPlayersByKda, 5)
 
+    let topPlayersByWeaponKills = {}
+
+    Object.keys(SOLDAT_WEAPONS).forEach(weaponKey => {
+        const weaponId = SOLDAT_WEAPONS[weaponKey].id
+        let topPlayersByThisWeaponKills = _.sortBy(playersWithEnoughGames, player => -player.playerStats.weaponStats[weaponId].kills)
+        topPlayersByThisWeaponKills = _.take(topPlayersByThisWeaponKills, 5)
+        topPlayersByWeaponKills[weaponId] = topPlayersByThisWeaponKills
+    })
+
     const allDiscordIds = allPlayerStats.map(player => player.discordId)
 
     return {
-        topPlayersByWinRate, topPlayersByTotalGames, topPlayersByKda, allDiscordIds
+        topPlayersByWinRate, topPlayersByTotalGames, topPlayersByKda, allDiscordIds, topPlayersByWeaponKills
     }
 }
 
@@ -373,6 +382,32 @@ const formatTopPlayers = (topPlayers, discordIdToUsername) => {
     }
 }
 
+const formatTopPlayersByWeapon = (topPlayers, discordIdToUsername, weaponName) => {
+    const weapon = soldat.getWeaponByFormattedName(weaponName)
+
+    if (weapon === undefined) {
+        return `${weaponName} is not a soldat weapon.`
+    }
+
+    const weaponId = weapon.id
+
+    const topPlayersByWeapon = topPlayers.topPlayersByWeaponKills[weaponId].map(topPlayer => {
+        const playerStats = topPlayer.playerStats
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.weaponStats[weaponId].kills} kills`
+    })
+
+    return {
+        embed: {
+            fields: [
+                {
+                    name: `**Top Players by ${weapon.formattedName} kills**`,
+                    value: topPlayersByWeapon.length > 0 ? topPlayersByWeapon.join("\n") : "No kills with this weapon"
+                },
+            ]
+        }
+    }
+}
+
 module.exports = {
-    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats, getTopPlayers, formatTopPlayers
+    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats, getTopPlayers, formatTopPlayers, formatTopPlayersByWeapon
 }

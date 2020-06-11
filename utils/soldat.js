@@ -78,7 +78,7 @@ const SOLDAT_WEAPONS = {
 }
 
 getWeaponByFormattedName = (formattedName) => {
-    const key = _.findKey(SOLDAT_WEAPONS, weapon => weapon.formattedName === formattedName)
+    const key = _.findKey(SOLDAT_WEAPONS, weapon => weapon.formattedName.toUpperCase().startsWith(formattedName.toUpperCase()))
     return SOLDAT_WEAPONS[key]
 }
 

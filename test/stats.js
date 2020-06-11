@@ -262,7 +262,17 @@ describe('Stats', () => {
                 bravoTickets: 1004,
                 startTime: 1000 + 60 * 60e+3,
                 endTime: 1000 + 75 * 60e+3, // 15 minute game
-                events: [],
+                events: [
+                    {
+                        timestamp: 1000 + 2 * 60e+3,
+                        type: TTW_EVENTS.PLAYER_KILL,
+                        killerTeam: "Alpha",
+                        killerDiscordId: "Player2",
+                        victimTeam: "Bravo",
+                        victimDiscordId: "Player3",
+                        weaponId: SOLDAT_WEAPONS.AK_74.id,
+                    },
+                ],
                 mapName: "ttw_two",
             },
         ]
@@ -272,6 +282,7 @@ describe('Stats', () => {
         const topPlayers = await stats.getTopPlayers(statsDb, 0)
         expect(topPlayers.topPlayersByWinRate.map(player => player.discordId)).eql(["Player5", "Player6", "Player1", "Player2", "Player4"])
         expect(topPlayers.topPlayersByTotalGames.map(player => player.discordId)).eql(["Player1", "Player2", "Player3", "Player4", "Player5"])
+        expect(topPlayers.topPlayersByWeaponKills[SOLDAT_WEAPONS.AK_74.id].map(player => player.discordId)).eql(["Player2", "Player1", "Player3", "Player4", "Player5"])
     })
 });
 
