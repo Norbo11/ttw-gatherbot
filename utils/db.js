@@ -1,11 +1,10 @@
 const MongoClient = require('mongodb').MongoClient;
 const _ = require("lodash")
 const logger = require("./logger")
-
-const URL = 'mongodb://localhost:27017';
+const constants = require("../constants")
 
 getUrl = () => {
-    return URL
+    return constants.MONGO_URL
 }
 
 getDbName = () => {
