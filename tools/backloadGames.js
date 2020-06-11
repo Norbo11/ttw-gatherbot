@@ -140,7 +140,7 @@ const backloadGames = async () => {
 
             const gatherStartMatch = message.match(gatherStartPattern)
             if (gatherStartMatch !== null) {
-                currentGather.currentSize = playersPerTeam["alpha"].length
+                currentGather.currentSize = playersPerTeam["alpha"].length * 2
                 currentGather.currentQueue = [...playersPerTeam["alpha"], ...playersPerTeam["bravo"]].map(name => {
                     return {id: hwidToDiscordId[playerNameToHwid[name]]}
                 })
