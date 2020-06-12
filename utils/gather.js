@@ -111,7 +111,6 @@ class Gather {
 
     currentSize = 6
     currentQueue = []
-    rematchQueue = []
     alphaTeam = []
     bravoTeam = []
     inGameState = IN_GAME_STATES["NO_GATHER"]
