@@ -22,6 +22,11 @@ module.exports = {
             return
         }
 
+        if (newSize > 10) {
+            message.channel.send(`The gather size can be a max of 10!`)
+            return
+        }
+
         message.channel.send("Changing size, hang on...")
 
         currentSoldatClient.changeGatherSize(currentGather, newSize, () => {
