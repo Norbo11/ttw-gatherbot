@@ -1,7 +1,6 @@
 const _ = require("lodash")
 const logger = require("./logger")
 const discord = require("./discord")
-const constants = require("../constants")
 const random = require("./random")
 const util = require("util")
 
@@ -170,7 +169,7 @@ class Gather {
     getServerLinkField(password = "goaway") {
         return {
             name: "Link",
-            value: `soldat://${constants.SERVER_IP}:${constants.SERVER_PORT}/${password}`,
+            value: `soldat://${process.env.SERVER_IP}:${process.env.SERVER_PORT}/${password}`,
         }
     }
 

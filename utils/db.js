@@ -1,10 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const _ = require("lodash")
 const logger = require("./logger")
-const constants = require("../constants")
 
 getUrl = () => {
-    return constants.MONGO_URL
+    return process.env.MONGO_URL
 }
 
 getDbName = () => {

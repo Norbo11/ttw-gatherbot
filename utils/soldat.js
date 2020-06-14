@@ -1,6 +1,5 @@
 const _ = require("lodash")
 const net = require("net")
-const constants = require("../constants")
 const logger = require("../utils/logger")
 const Parser = require("binary-parser").Parser
 
@@ -184,10 +183,10 @@ const soldatRefreshxParser = new Parser()
 
 
 connectToSoldatServer = () => {
-    logger.log.info(`Attempting admin connection with Soldat Server at ${constants.SERVER_IP}:${constants.SERVER_PORT}/${constants.SERVER_ADMIN_PASSWORD}`)
+    logger.log.info(`Attempting admin connection with Soldat Server at ${process.env.SERVER_IP}:${process.env.SERVER_PORT}/${process.env.SERVER_ADMIN_PASSWORD}`)
 
-    const client = net.connect(constants.SERVER_PORT, constants.SERVER_IP, function () {
-        client.write(`${constants.SERVER_ADMIN_PASSWORD}\n`)
+    const client = net.connect(process.env.SERVER_PORT, process.env.SERVER_IP, function () {
+        client.write(`${process.env.SERVER_ADMIN_PASSWORD}\n`)
         logger.log.info("Successfully connected to the Soldat server.")
     })
 

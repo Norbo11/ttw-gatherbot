@@ -1,5 +1,4 @@
 const gather = require("../utils/gather")
-const constants = require("../constants")
 const logger = require("../utils/logger")
 const soldat = require("../utils/soldat")
 const soldatEvents = require("../utils/soldatEvents")
@@ -10,7 +9,7 @@ module.exports = client => {
 
     const netClient = soldat.connectToSoldatServer()
     global.currentSoldatClient = new soldat.SoldatClient(netClient)
-    global.currentDiscordChannel = client.channels.get(constants.DISCORD_CHANNEL_ID)
+    global.currentDiscordChannel = client.channels.get(process.env.DISCORD_CHANNEL_ID)
 
     db.getDbConnection().then(async (dbConnection) => {
         global.currentStatsDb = new db.StatsDB(dbConnection)

@@ -1,5 +1,4 @@
 require("dotenv").config()
-const constants = require("./constants")
 const logger = require("./utils/logger")
 const Discord = require("discord.js")
 const fs = require("fs")

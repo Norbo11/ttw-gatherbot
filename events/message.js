@@ -1,15 +1,14 @@
-const constants = require("../constants")
 const _ = require("lodash")
 const logger = require("../utils/logger")
 
 module.exports = (client, message) => {
     // Do not process messages that don't start with our prefix, or come from a bot
-    if (!message.content.startsWith(constants.PREFIX) || message.author.bot) return;
+    if (!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
 
     // Do not process messages that don't come from the designated channel
     if (message.channel.id !== currentDiscordChannel.id) return;
 
-    const args = message.content.slice(constants.PREFIX.length).split(/ +/);
+    const args = message.content.slice(process.env.PREFIX.length).split(/ +/);
     const commandText = args.shift().toLowerCase();
 
     const command = _.find(client.commands, (command) => command.aliases.includes((commandText)))
