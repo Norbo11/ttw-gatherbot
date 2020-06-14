@@ -35,29 +35,8 @@ const backloadGames = async () => {
 
     let currentTimestamp = 0
 
-    const hwidToDiscordId = {
-        '3FB9882DB49': "531450590505730049", // '[WP] NamelessWolf',
-        '7150942A522': "672507205295276043", // 'Janusz Korwin-Mikke',
-        '7E70F684F34': "122766322739314688", // 'Norbo11',
-        '1C4A7D823EF': "695187087145566238", // 'oy',
-        '1412F48F843': "449626154320789524", // 'Universal Soldier',
-        '382B16F8746': "449626154320789524", // 'Universal Soldier',
-        '7855C05A03C': "432994416710516758", // 'pavliko',
-        '4FE6652D1B2': "705422144787578980", // 'Formax',
-        '19DB190DE95': "203907267924328448", // 'hs|McWise',
-        '2EC8430D647': "124290386452545537", // 'Deide',
-        '731C872E6BC': "449626154320789524", // 'Universal Soldier',
-        '1C30F5F39F3': "71993252328247296",  // '_North',
-        '68EAF77CA53': "428568369655054359", // 'Isojoenrannan hurja',
-        '50EFFC48B92': "302151016600567808", // 'SethGecko',
-        '451934B9692': "456828341555560458", // '[WP]-//power\\\\-',
-        '2131DC7CC8C': "432994416710516758", // 'pavliko',
-        '5A19489A1FD': "229683777935376384", // 'Lets_Twist',
-        '7666259E411': "432994416710516758", // 'pavliko'
-        '152A53F5036': "292100010882105346", // 'Mojo'
-        "1DD9AF92030": "432994416710516758", // 'pavliko'
-        "448A6CCBB03": "302151016600567808",
-    }
+    // Take this from hwidToDiscordId.json which shouldn't be committed
+    const hwidToDiscordId = {}
 
     const soldatClient = new soldat.SoldatClient(netClient)
     const currentGather = new gather.Gather(soldatClient, discordChannel, statsDb, hwidToDiscordId, () => currentTimestamp)
