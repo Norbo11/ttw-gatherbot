@@ -246,9 +246,12 @@ const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
 }
 
 const formatMilliseconds = (millis) => {
-    const momentDuration = moment.duration(millis)
-    return momentDuration.humanize()
-    return `${momentDuration.hours().toString().padStart(2, "0")}:${momentDuration.minutes().toString().padStart(2, "0")}:${momentDuration.seconds().toString().padStart(2, "0")}`
+    if (millis === 0) {
+        return "0 seconds"
+    } else {
+        const momentDuration = moment.duration(millis)
+        return momentDuration.humanize()
+    }
 }
 
 const formatGeneralStatsForPlayer = (playerName, playerStats) => {

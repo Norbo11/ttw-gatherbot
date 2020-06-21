@@ -340,7 +340,7 @@ describe('Stats Formatter', () => {
                         name: "**Overall Stats for Player**",
                         value:
                             "**Gathers Played**: 3\n" +
-                            "**Total Gather Time**: 00:45:00\n" +
+                            "**Total Gather Time**: an hour\n" +
                             "**Won/Lost**: 2/1 (67%)\n" +
                             "**Kills/Deaths**: 12/7 (1.71)\n" +
                             "**Caps**: 2 (0.67 per game)\n" +
@@ -359,9 +359,9 @@ describe('Stats Formatter', () => {
                     {
                         name: "**Favourite Classes**",
                         value:
-                            "**Radioman**: 00:25:00\n" +
-                            "**General**: 00:20:00\n" +
-                            "**Artillery**: 00:00:00",
+                            "**Radioman**: 25 minutes\n" +
+                            "**General**: 20 minutes\n" +
+                            "**Artillery**: 0 seconds",
                         inline: true,
                     },
                     {
@@ -400,8 +400,8 @@ describe('Stats Formatter', () => {
                         name: "**Overall Stats**",
                         value:
                             "**Gathers Played**: 3\n" +
-                            "**Total Gather Time**: 00:45:00\n" +
-                            "**Average Gather Time**: 00:15:00\n" +
+                            "**Total Gather Time**: an hour\n" +
+                            "**Average Gather Time**: 15 minutes\n" +
                             "**Average Tickets Left**: 590\n" +
                             `**First Gather**: ${moment().format("DD-MM-YYYY")}\n` +
                             "**Last Gather**: a few seconds ago",
