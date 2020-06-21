@@ -7,7 +7,7 @@ module.exports = {
     aliases: ["ttwmaps", "ttwmaplist"],
     description: "See the current maplist",
     execute(client, message, args) {
-		const mapsList = fs.readdirSync(mapsFolder).join(", ");
+		const mapsList = fs.readdirSync(mapsFolder).sort().join(", ");
 		message.channel.send({embed: {
 			color: 3447003,
 			title: "TTW Maplist",
