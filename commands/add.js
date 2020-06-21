@@ -10,14 +10,6 @@ module.exports = {
             return
         }
 
-        if (!currentGather.currentQueue.includes(message.author)) {
-            currentGather.currentQueue.push(message.author)
-
-            if (currentGather.currentQueue.length === currentGather.currentSize) {
-                currentGather.startGame(message)
-            } else {
-                utils.displayQueueWithServerInfo(message)
-            }
-        }
+        currentGather.playerAdd(message.author)
     },
 };

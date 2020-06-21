@@ -420,6 +420,20 @@ class Gather {
             this.playerInGameAuth(playerName, authCode)
         }
     }
+    
+    playerAdd(discordUser) {
+        if (!this.currentQueue.includes(discordUser)) {
+            this.currentQueue.push(discordUser)
+
+            if (this.currentQueue.length === this.currentSize) {
+                this.startGame(message)
+            } else {
+                this.soldatClient.getServerInfo(serverInfo => {
+                    this.displayQueue(serverInfo)
+                })
+            }
+        }
+    }
 
     playerClassSwitch(playerName, classId) {
 
