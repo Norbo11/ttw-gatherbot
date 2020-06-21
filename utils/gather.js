@@ -304,8 +304,9 @@ class Gather {
                 this.rematchQueue.push(discordUser)
 
                 if (this.rematchQueue.length === lastGame.size) {
-                    const alphaDiscordUsers = _.filter(this.rematchQueue, user => lastGame.alphaPlayers.includes(user.id))
-                    const bravoDiscordUsers = _.filter(this.rematchQueue, user => lastGame.bravoPlayers.includes(user.id))
+                    // Flip teams
+                    const alphaDiscordUsers = _.filter(this.rematchQueue, user => lastGame.bravoPlayers.includes(user.id))
+                    const bravoDiscordUsers = _.filter(this.rematchQueue, user => lastGame.alphaPlayers.includes(user.id))
 
                     this.soldatClient.changeMap(lastGame.mapName, () => {
                         this.startGame(alphaDiscordUsers, bravoDiscordUsers)
