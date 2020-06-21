@@ -135,30 +135,6 @@ class Gather {
         this.getCurrentTimestamp = getCurrentTimestamp
     }
 
-    getPlayerStrings(delim = "\n") {
-        const alphaPlayersString = this.alphaTeam.length > 0 ? this.alphaTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
-        const bravoPlayersString = this.bravoTeam.length > 0 ? this.bravoTeam.map(user => `<@${user.id}>`).join(delim) : "No players"
-
-        return {alphaPlayersString, bravoPlayersString}
-    }
-
-    getPlayerFields() {
-        const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings()
-
-        return [
-            {
-                name: `${discord.teamEmoji("Alpha")} Alpha Team`,
-                value: `${alphaPlayersString}`,
-                inline: true
-            },
-            {
-                name: `${discord.teamEmoji("Bravo")} Bravo Team`,
-                value: `${bravoPlayersString}`,
-                inline: true
-            }
-        ];
-    }
-
     getMapField(mapName) {
         return {
             name: "Map",
@@ -225,7 +201,7 @@ class Gather {
                             color: 0xff0000,
                             fields: [
                                 this.getServerLinkField(password),
-                                ...this.getPlayerFields(),
+                                ...discord.getPlayerFields(this.alphaTeam.map(user => user.id), this.bravoTeam.map(user => user.id)),
                                 this.getMapField(serverInfo["mapName"])
                             ]
                         }
@@ -237,7 +213,7 @@ class Gather {
                         title: "Gather Started",
                         color: 0xff0000,
                         fields: [
-                            ...this.getPlayerFields(),
+                            ...discord.getPlayerFields(),
                             this.getMapField(serverInfo["mapName"])
                         ]
                     }
@@ -254,7 +230,11 @@ class Gather {
 
         this.endTime = this.getCurrentTimestamp()
 
-        const {alphaPlayersString, bravoPlayersString} = this.getPlayerStrings(" - ")
+        const {alphaPlayersString, bravoPlayersString} = discord.getPlayerStrings(
+            this.alphaTeam.map(user => user.id),
+            this.bravoTeam.map(user => user.id),
+            " - "
+        )
 
         const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
         const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
