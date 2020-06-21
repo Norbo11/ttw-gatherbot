@@ -7,9 +7,6 @@ module.exports = {
     aliases: ["stats", "ttwstats"],
     description: "Show yours or someone else's personal gather statistics (use @mentions).",
     execute(client, message, args) {
-        logger.log.info(`Mentioned members: ${utils.inspect(message.mentions.members)}`)
-        logger.log.info(`Mentioned users: ${utils.inspect(message.mentions.users)}`)
-
         let discordUsers = []
 
         if (args.length === 0) {
