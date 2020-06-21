@@ -346,6 +346,20 @@ const formatGatherStats = (gatherStats) => {
     }
 }
 
+const getTeamCaps = (events, teamName) => {
+    let caps = 0
+
+    events.forEach(event => {
+        if (event.type === TTW_EVENTS.FLAG_CAP) {
+           if (event.teamName === teamName) {
+               caps += 1
+           }
+        }
+    })
+
+    return caps
+}
+
 const formatTopPlayers = (topPlayers, discordIdToUsername) => {
     const topPlayersByWinRate = topPlayers.topPlayersByWinRate.map(topPlayer => {
         const playerStats = topPlayer.playerStats
@@ -409,5 +423,6 @@ const formatTopPlayersByWeapon = (topPlayers, discordIdToUsername, weaponName) =
 }
 
 module.exports = {
-    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats, getTopPlayers, formatTopPlayers, formatTopPlayersByWeapon
+    getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats,
+    getTopPlayers, formatTopPlayers, formatTopPlayersByWeapon, getTeamCaps
 }
