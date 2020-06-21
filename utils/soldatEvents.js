@@ -1,5 +1,6 @@
 const logger = require("./logger")
 const soldat = require("./soldat")
+const constants = require("./constants")
 
 
 PASSIVE_EVENTS = [
@@ -23,11 +24,11 @@ PASSIVE_EVENTS = [
         pattern: /\((?<killerTeam>.*?)\) (?<killerName>.*?) killed \((?<victimTeam>.*?)\) (?<victimName>.*?) with (?<weapon>.*)/,
         handler: (gather, match) =>
             gather.playerKill(
-                soldat.TEAMS[match.groups["killerTeam"]],
+                constants.TEAMS[match.groups["killerTeam"]],
                 match.groups["killerName"],
-                soldat.TEAMS[match.groups["victimTeam"]],
+                constants.TEAMS[match.groups["victimTeam"]],
                 match.groups["victimName"],
-                soldat.getWeaponByFormattedName(match.groups["weapon"]),
+                constants.getWeaponByFormattedName(match.groups["weapon"]),
             ),
         condition: gather => gather.gatherHasStarted()
     },
@@ -35,7 +36,7 @@ PASSIVE_EVENTS = [
         pattern: /--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/,
         handler: (gather, match) =>
             gather.conquer(
-                soldat.TEAMS[parseInt(match.groups["conqueringTeam"])],
+                constants.TEAMS[parseInt(match.groups["conqueringTeam"])],
                 parseInt(match.groups["alphaTickets"]),
                 parseInt(match.groups["bravoTickets"]),
                 parseInt(match.groups["currentAlphaBunker"]),

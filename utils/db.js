@@ -26,8 +26,18 @@ class StatsDB {
     }
 
     async getAllGames() {
-        const result = await this.db.collection("Game").find({})
+        let result = await this.db.collection("Game").find({})
+        result = result.sort({startTime: 1}) // Sort ascending by startTime
         return result.toArray()
+    }
+
+    async getLastGame() {
+        const games = await this.getAllGames()
+        if (games.length > 0) {
+            return games[games.length - 1]
+        } else {
+            return undefined
+        }
     }
 
     async getGameByStartTime(startTime) {

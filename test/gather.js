@@ -15,11 +15,14 @@ const db = require("../utils/db")
 const events = require("events");
 
 const gather = require("../utils/gather")
-const TTW_CLASSES = gather.TTW_CLASSES
-const TTW_EVENTS = gather.TTW_EVENTS
+const constants = require("../utils/constants")
+
+const TTW_CLASSES = constants.TTW_CLASSES
+const TTW_EVENTS = constants.TTW_EVENTS
+const SOLDAT_WEAPONS = constants.SOLDAT_WEAPONS
+const IN_GAME_STATES = constants.IN_GAME_STATES
 
 const soldat = require("../utils/soldat")
-const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
 const soldatEvents = require("../utils/soldatEvents")
 
 
@@ -85,21 +88,21 @@ describe('Gather', () => {
     })
 
     it('should handle gather beginnings and endings', async () => {
-        expect(currentGather.inGameState).equal(gather.IN_GAME_STATES["NO_GATHER"])
+        expect(currentGather.inGameState).equal(IN_GAME_STATES["NO_GATHER"])
 
         // TODO: Refactor into methods on the gather class
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
         currentGather.startGame()
-        expect(currentGather.inGameState).equal(gather.IN_GAME_STATES["GATHER_PRE_RESET"])
+        expect(currentGather.inGameState).equal(IN_GAME_STATES["GATHER_PRE_RESET"])
 
         netClient.emit("data", "--- gatherstart ttw_test 5")
-        expect(currentGather.inGameState).equal(gather.IN_GAME_STATES["GATHER_STARTED"])
+        expect(currentGather.inGameState).equal(IN_GAME_STATES["GATHER_STARTED"])
         expect(currentGather.numberOfBunkers).equal(5)
 
         netClient.emit("data", "--- gatherend 333 0 2 0")
-        expect(currentGather.inGameState).equal(gather.IN_GAME_STATES["NO_GATHER"])
+        expect(currentGather.inGameState).equal(IN_GAME_STATES["NO_GATHER"])
     });
 
     it('should handle class changes', async () => {

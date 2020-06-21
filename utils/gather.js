@@ -3,107 +3,11 @@ const logger = require("./logger")
 const discord = require("./discord")
 const random = require("./random")
 const util = require("util")
+const constants = require("./constants")
 
-MAPS_LIST = [
-    "ttw_42ndWood", "ttw_Borderwars", "ttw_Concrete", "ttw_Forgotten", "ttw_Junkyard", "ttw_Mudder", "ttw_rime", "ttw_Take", "ttw_Village",
-    "ttw_Afrique", "ttw_Bridge", "ttw_crater", "ttw_Fort", "ttw_kaibatsu", "ttw_Myst2", "ttw_Rime", "ttw_Tenshin2", "ttw_Waste",
-    "ttw_afterGlory", "ttw_cadet", "ttw_crecent", "ttw_fortress", "ttw_kamiquasi", "ttw_Myst", "ttw_Tenshin", "ttw_WIP",
-    "ttw_Alize", "ttw_Caen", "ttw_Creek", "ttw_Frostbite", "ttw_Kampfer", "ttw_NewNature", "ttw_rover", "ttw_Teroya", "ttw_Ypres-fix",
-    "ttw_alphathing", "ttw_Cangaceiros", "ttw_crimson", "ttw_frost", "ttw_Krath", "ttw_Nomans", "ttw_shaft", "ttw_tower",
-    "ttw_Anoxi", "ttw_cannibals", "ttw_Dawn", "ttw_generic", "ttw_Limbo", "ttw_nworld", "ttw_Skybridge", "ttw_Toxic",
-    "ttw_art", "ttw_castle", "ttw_desert", "ttw_Gloryhill", "ttw_marsh", "ttw_paperwar", "ttw_Skyscrapers", "ttw_Trainyards", "ttw_Ypres_n",
-    "ttw_Autumn", "ttw_Cathedral", "ttw_Drain", "ttw_Grasshill", "ttw_meteorite", "ttw_Pinewood", "ttw_SoldiersFoly", "ttw_Untitled3", "ttw_Ypres",
-    "ttw_Bachvu", "ttw_ColdMorning", "ttw_El_Alamein", "ttw_hue", "ttw_Mound", "Kopia", "ttw_Plat", "ttw_storm", "ttw_Valley",
-    "ttw_BattleField", "ttw_ColdMorning.old", "ttw_Forest", "ttw_Junkyard2", "ttw_Mound", "ttw_Rage", "ttw_Struggle", "ttw_Verdun"
-]
+const IN_GAME_STATES = constants.IN_GAME_STATES
+const TTW_EVENTS = constants.TTW_EVENTS
 
-
-IN_GAME_STATES = {
-    NO_GATHER: "NO_GATHER",
-    GATHER_PRE_RESET: "GATHER_PRE_RESET",
-    GATHER_STARTED: "GATHER_STARTED",
-}
-
-NOT_AUTHED_KICK_TIMER_SECONDS = 60
-
-
-// The IDs here must match the IDs in the TTW script
-const TTW_CLASSES = {
-    LONG_RANGE_INFANTRY: {
-        id: "1",
-        name: "LONG_RANGE_INFANTRY",
-        aliases: ["LONG", "LRI"],
-        formattedName: "Long Range Infantry",
-    },
-    SHORT_RANGE_INFANTRY: {
-        id: "2",
-        name: "SHORT_RANGE_INFANTRY",
-        aliases: ["SHORT", "SRI"],
-        formattedName: "Short Range Infantry",
-    },
-    MEDIC: {
-        id: "3",
-        name: "MEDIC",
-        aliases: ["MEDIC", "MED", "DOC"],
-        formattedName: "General",
-    },
-    GENERAL: {
-        id: "4",
-        name: "GENERAL",
-        aliases: ["GENERAL", "GEN"],
-        formattedName: "General",
-    },
-    RADIOMAN: {
-        id: "5",
-        name: "RADIOMAN",
-        aliases: ["RADIOMAN", "RAD"],
-        formattedName: "Radioman",
-    },
-    SABOTEUR: {
-        id: "6",
-        name: "SABOTEUR",
-        aliases: ["SABOTEUR", "SABO"],
-        formattedName: "Saboteur",
-    },
-    ENGINEER: {
-        id: "7",
-        name: "ENGINEER",
-        aliases: ["ENGINEER", "ENG"],
-        formattedName: "Engineer",
-    },
-    ELITE: {
-        id: "8",
-        name: "ELITE",
-        aliases: ["ELITE", "ELI", "SNIPER", "SNIP"],
-        formattedName: "Elite",
-    },
-    SPY: {
-        id: "9",
-        name: "SPY",
-        aliases: ["SPY"],
-        formattedName: "Spy",
-    },
-    ARTILLERY: {
-        id: "10",
-        name: "ARTILLERY",
-        aliases: ["ARTILLERY", "ART"],
-        formattedName: "Artillery",
-    },
-}
-
-const TTW_EVENTS = {
-    PLAYER_CLASS_SWITCH: "PLAYER_CLASS_SWITCH",
-    FLAG_CAP: "FLAG_CAP",
-    GATHER_PAUSE: "GATHER_PAUSE",
-    GATHER_UNPAUSE: "GATHER_UNPAUSE",
-    BUNKER_CONQUER: "BUNKER_CONQUER",
-    PLAYER_KILL: "PLAYER_KILL"
-}
-
-getClassById = (id) => {
-    const key = _.findKey(TTW_CLASSES, ttwClass => ttwClass.id === id)
-    return TTW_CLASSES[key]
-}
 
 class Gather {
 
@@ -175,7 +79,7 @@ class Gather {
         this.bravoTeam = bravoPlayers
         this.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
-        this.soldatClient.setServerPassword(password, () => {
+        this.soldatClient.setServerPassword(this.password, () => {
 
             this.soldatClient.getServerInfo(serverInfo => {
                 shuffledQueue.forEach(user => {
@@ -237,7 +141,7 @@ class Gather {
         this.playerNameToCurrentClassId = {}
         this.password = ""
 
-        this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
+        this.soldatClient.changeMap(constants.MAPS_LIST[random.getRandomInt(0, constants.MAPS_LIST.length)])
         this.soldatClient.setServerPassword("")
 
         this.discordChannel.send({
@@ -480,6 +384,6 @@ class Gather {
 }
 
 module.exports = {
-    Gather, IN_GAME_STATES, TTW_CLASSES, TTW_EVENTS, getClassById
+    Gather
 }
 

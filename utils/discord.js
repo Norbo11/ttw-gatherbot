@@ -1,5 +1,6 @@
 const logger = require("./logger")
 const moment = require("moment")
+const stats = require("../utils/stats")
 
 teamEmoji = (teamName) => {
     if (teamName === "Alpha") {
@@ -35,25 +36,27 @@ getPlayerFields = (alphaTeamIds, bravoTeamIds) => {
     ];
 }
 
-getGatherLengthField = (startTime, endTime) => {
+getGatherLengthField = (startTime, endTime, inline = false) => {
     const momentDuration = moment.duration(endTime - startTime)
     return {
         name: "Gather Duration",
-        value: momentDuration.humanize()
+        value: momentDuration.humanize(),
+        inline
     }
 }
 
-getMapField = (mapName) => {
+getMapField = (mapName, inline = false) => {
     return {
         name: "Map",
         value: `${mapName}`,
+        inline,
     }
 }
 
 getGatherEndFields = (game) => {
     return [
-        getGatherLengthField(game.startTime, game.endTime),
-        getMapField(game.mapName),
+        getGatherLengthField(game.startTime, game.endTime, true),
+        getMapField(game.mapName, true),
         ...getWinnerAndLoserFields(
             game.alphaTickets,
             game.bravoTickets,

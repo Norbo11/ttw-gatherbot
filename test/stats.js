@@ -6,18 +6,15 @@ chai.use(chaiSubset)
 
 const expect = chai.expect
 
-const sinon = require("sinon")
-const logger = require("../utils/logger")
 const moment = require("moment")
 
 const stats = require("../utils/stats")
 const db = require("../utils/db")
-const gather = require("../utils/gather")
-const soldat = require("../utils/soldat")
+const constants = require("../utils/constants")
 
-const TTW_CLASSES = gather.TTW_CLASSES
-const TTW_EVENTS = gather.TTW_EVENTS
-const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
+const TTW_CLASSES = constants.TTW_CLASSES
+const TTW_EVENTS = constants.TTW_EVENTS
+const SOLDAT_WEAPONS = constants.SOLDAT_WEAPONS
 
 
 describe('Stats', () => {

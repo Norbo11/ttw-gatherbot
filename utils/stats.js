@@ -2,12 +2,12 @@ const _ = require("lodash")
 const moment = require("moment")
 
 const logger = require("./logger")
-const gather = require("./gather")
+const constants = require("./constants")
 const soldat = require("./soldat")
 
-const TTW_CLASSES = gather.TTW_CLASSES
-const TTW_EVENTS = gather.TTW_EVENTS
-const SOLDAT_WEAPONS = soldat.SOLDAT_WEAPONS
+const TTW_CLASSES = constants.TTW_CLASSES
+const TTW_EVENTS = constants.TTW_EVENTS
+const SOLDAT_WEAPONS = constants.SOLDAT_WEAPONS
 
 getCaps = (discordId, events) => {
     events = _.filter(events, event =>
@@ -247,6 +247,7 @@ const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
 
 const formatMilliseconds = (millis) => {
     const momentDuration = moment.duration(millis)
+    return momentDuration.humanize()
     return `${momentDuration.hours().toString().padStart(2, "0")}:${momentDuration.minutes().toString().padStart(2, "0")}:${momentDuration.seconds().toString().padStart(2, "0")}`
 }
 
@@ -263,7 +264,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {
-        return {weaponName: soldat.getWeaponById(weaponId).formattedName, ...playerStats.weaponStats[weaponId]}
+        return {weaponName: constants.getWeaponById(weaponId).formattedName, ...playerStats.weaponStats[weaponId]}
     })
 
     favouriteWeapons = _.sortBy(favouriteWeapons, weaponStat => -weaponStat.kills)
@@ -271,7 +272,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     favouriteWeapons = favouriteWeapons.map(weaponStat => `**${weaponStat.weaponName}**: ${weaponStat.kills} kills`)
 
     let favouriteClasses = Object.keys(playerStats.classStats).map(classId => {
-        return {className: gather.getClassById(classId).formattedName, ...playerStats.classStats[classId]}
+        return {className: constants.getClassById(classId).formattedName, ...playerStats.classStats[classId]}
     })
 
     favouriteClasses = _.sortBy(favouriteClasses, classStat => -classStat.playingTime)
@@ -397,7 +398,7 @@ const formatTopPlayers = (topPlayers, discordIdToUsername) => {
 }
 
 const formatTopPlayersByWeapon = (topPlayers, discordIdToUsername, weaponName) => {
-    const weapon = soldat.getWeaponByFormattedName(weaponName)
+    const weapon = constants.getWeaponByFormattedName(weaponName)
 
     if (weapon === undefined) {
         return `${weaponName} is not a soldat weapon.`

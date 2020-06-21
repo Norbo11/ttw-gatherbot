@@ -2,16 +2,19 @@ const logger = require("./logger")
 const gather = require("../utils/gather")
 
 
+const constants = require("../utils/constants")
+
+
 displayGatherStatus = (message) => {
     currentSoldatClient.getServerInfo(serverInfo => {
         currentSoldatClient.getGatherStatus((alphaTickets, bravoTickets, alphaCaps, bravoCaps) => {
 
             let description = undefined;
 
-            if (currentGather.inGameState === gather.IN_GAME_STATES["GATHER_PRE_RESET"]) {
+            if (currentGather.inGameState === constants.IN_GAME_STATES["GATHER_PRE_RESET"]) {
                 description = `**Gather Waiting for Reset**`
 
-            } else if (currentGather.inGameState === gather.IN_GAME_STATES["GATHER_STARTED"]) {
+            } else if (currentGather.inGameState === constants.IN_GAME_STATES["GATHER_STARTED"]) {
                 description = `**Gather In Progress**\n` +
                     `:a: **Alpha** - Tickets: ${alphaTickets} - Caps: ${alphaCaps}\n` +
                     `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
