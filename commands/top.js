@@ -1,7 +1,7 @@
 const logger = require("../utils/logger")
 const utils = require("../utils/commandUtils")
 const stats = require("../utils/stats")
-
+const discord = require("../utils/discord")
 
 module.exports = {
     aliases: ["top"],
@@ -10,14 +10,7 @@ module.exports = {
         stats.getTopPlayers(currentStatsDb, 5).then(topPlayers => {
 
             const discordIdToUsername = {}
-            Promise.all(topPlayers.allDiscordIds.map(async (discordId) => {
-                try {
-                    const user = await client.fetchUser(discordId)
-                    discordIdToUsername[discordId] = user.username
-                } catch (e) {
-                    logger.log.warn(`Could not find user with discord ID ${discordId}`)
-                }
-            })).then(() => {
+            discord.getDiscordIdToUsernameMap(client, discordIdToUsername, topPlayers.allDiscordIds).then(() => {
                 if (args.length === 1) {
                     const weaponName = args[0]
                     message.channel.send(stats.formatTopPlayersByWeapon(topPlayers, discordIdToUsername, weaponName))

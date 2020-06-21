@@ -364,6 +364,34 @@ const getTeamCaps = (events, teamName) => {
     return caps
 }
 
+const getKillsAndDeathsPerPlayer = (events) => {
+    const playerKillsAndDeaths = {}
+
+    events.forEach(event => {
+        if (event.type === TTW_EVENTS.PLAYER_KILL) {
+            if (!(event.killerDiscordId in playerKillsAndDeaths)) {
+                playerKillsAndDeaths[event.killerDiscordId] = {
+                    kills: 0,
+                    deaths: 0
+                }
+            }
+
+            if (!(event.victimDiscordId in playerKillsAndDeaths)) {
+                playerKillsAndDeaths[event.victimDiscordId] = {
+                    kills: 0,
+                    deaths: 0
+                }
+            }
+
+            playerKillsAndDeaths[event.killerDiscordId].kills += 1
+            playerKillsAndDeaths[event.victimDiscordId].deaths += 1
+        }
+    })
+
+    return playerKillsAndDeaths
+}
+
+
 const formatTopPlayers = (topPlayers, discordIdToUsername) => {
     const topPlayersByWinRate = topPlayers.topPlayersByWinRate.map(topPlayer => {
         const playerStats = topPlayer.playerStats
@@ -428,5 +456,5 @@ const formatTopPlayersByWeapon = (topPlayers, discordIdToUsername, weaponName) =
 
 module.exports = {
     getPlayerStats, formatGeneralStatsForPlayer, getGatherStats, formatGatherStats,
-    getTopPlayers, formatTopPlayers, formatTopPlayersByWeapon, getTeamCaps
+    getTopPlayers, formatTopPlayers, formatTopPlayersByWeapon, getTeamCaps, getKillsAndDeathsPerPlayer
 }

@@ -79,6 +79,9 @@ class Gather {
         this.bravoTeam = bravoPlayers
         this.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
+        const alphaDiscordIds = this.alphaTeam.map(user => user.id)
+        const bravoDiscordIds = this.bravoTeam.map(user => user.id)
+
         this.soldatClient.setServerPassword(this.password, () => {
 
             this.soldatClient.getServerInfo(serverInfo => {
@@ -89,7 +92,7 @@ class Gather {
                             color: 0xff0000,
                             fields: [
                                 discord.getServerLinkField(this.password),
-                                ...discord.getPlayerFields(this.alphaTeam.map(user => user.id), this.bravoTeam.map(user => user.id)),
+                                ...discord.getPlayerFields(alphaDiscordIds, bravoDiscordIds),
                                 discord.getMapField(serverInfo["mapName"])
                             ]
                         }
@@ -101,7 +104,7 @@ class Gather {
                         title: "Gather Started",
                         color: 0xff0000,
                         fields: [
-                            ...discord.getPlayerFields(),
+                            ...discord.getPlayerFields(alphaDiscordIds, bravoDiscordIds),
                             discord.getMapField(serverInfo["mapName"])
                         ]
                     }
@@ -275,7 +278,7 @@ class Gather {
             this.currentQueue.push(discordUser)
 
             if (this.currentQueue.length === this.currentSize) {
-                this.startGame(message)
+                this.startGame()
             } else {
                 this.soldatClient.getServerInfo(serverInfo => {
                     this.displayQueue(serverInfo)
@@ -334,14 +337,14 @@ class Gather {
                 logger.log.info(`${playerName} (${hwid}) found in HWID map, no auth needed. Discord ID: ${discordId}`)
 
             } else {
-                logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
+                logger.log.info(`${playerName} (${hwid}) not found in HWID map, asking to auth and kicking in ${constants.NOT_AUTHED_KICK_TIMER_SECONDS} seconds`)
 
                 this.soldatClient.messagePlayer(playerName, "You are currently not authenticated. Please type !auth in the gather channel. " +
-                    `Kicking in ${NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
+                    `Kicking in ${constants.NOT_AUTHED_KICK_TIMER_SECONDS} seconds.`)
 
                 this.kickTimers[playerName] = setTimeout(() => {
                     this.soldatClient.kickPlayer(playerName)
-                }, NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
+                }, constants.NOT_AUTHED_KICK_TIMER_SECONDS * 1000)
             }
         })
     }

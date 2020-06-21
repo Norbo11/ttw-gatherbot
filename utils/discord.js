@@ -1,6 +1,7 @@
 const logger = require("./logger")
 const moment = require("moment")
 const stats = require("../utils/stats")
+const _ = require("lodash")
 
 teamEmoji = (teamName) => {
     if (teamName === "Alpha") {
@@ -53,6 +54,21 @@ getMapField = (mapName, inline = false) => {
     }
 }
 
+getKillAndDeathFields = (playerKillsAndDeaths, discordIdToUsername) => {
+    const playerKDs = []
+
+    _.forEach(playerKillsAndDeaths, (killsAndDeaths, discordId) => {
+        playerKDs.push(`**${discordIdToUsername[discordId]}**: ${killsAndDeaths.kills}/${killsAndDeaths.deaths}`)
+    })
+
+    return [
+        {
+            name: "Player Kills/Deaths",
+            value: playerKDs.join("\n")
+        }
+    ]
+}
+
 getGatherEndFields = (game) => {
     return [
         getGatherLengthField(game.startTime, game.endTime, true),
@@ -63,8 +79,9 @@ getGatherEndFields = (game) => {
             stats.getTeamCaps(game.events, "Alpha"),
             stats.getTeamCaps(game.events, "Bravo"),
             game.alphaPlayers,
-            game.bravoPlayers
-        )
+            game.bravoPlayers,
+            stats.getKillsAndDeathsPerPlayer(game.events)
+        ),
     ]
 }
 
@@ -75,12 +92,20 @@ getServerLinkField = (password = "") => {
     }
 }
 
-getWinnerAndLoserFields = (alphaTickets, bravoTickets, alphaCaps, bravoCaps, alphaDiscordIds, bravoDiscordIds) => {
-    const {alphaPlayersString, bravoPlayersString} = getPlayerStrings(
-        alphaDiscordIds,
-        bravoDiscordIds,
-        " - "
-    )
+getPlayerFieldsWithKillsAndDeaths = (discordIds, playerKillsAndDeaths) => {
+    return discordIds.map(discordId => {
+        const kills = playerKillsAndDeaths[discordId].kills
+        const deaths = playerKillsAndDeaths[discordId].deaths
+
+        return `<@${discordId}>: ${kills}/${deaths}`
+    })
+}
+
+getWinnerAndLoserFields = (alphaTickets, bravoTickets, alphaCaps, bravoCaps,
+                           alphaDiscordIds, bravoDiscordIds, playerKillsAndDeaths) => {
+
+    const alphaPlayersString = getPlayerFieldsWithKillsAndDeaths(alphaDiscordIds, playerKillsAndDeaths).join("\n")
+    const bravoPlayersString = getPlayerFieldsWithKillsAndDeaths(bravoDiscordIds, playerKillsAndDeaths).join("\n")
 
     const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
     const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
@@ -93,18 +118,28 @@ getWinnerAndLoserFields = (alphaTickets, bravoTickets, alphaCaps, bravoCaps, alp
 
     return [
         {
-            name: `**Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
-            value: `${teamEmoji(winningTeam)}: ${winningPlayersString}`,
+            name: `${teamEmoji(winningTeam)} **Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
+            value: `${winningPlayersString}`,
         },
         {
-            name: `Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
-            value: `${teamEmoji(losingTeam)}: ${losingPlayersString}`,
+            name: `${teamEmoji(losingTeam)} Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
+            value: `${losingPlayersString}`,
         },
     ]
 }
 
+getDiscordIdToUsernameMap = async (client, discordIdToUsername, discordIds) => {
+    return Promise.all(discordIds.map(async (discordId) => {
+        try {
+            const user = await client.fetchUser(discordId)
+            discordIdToUsername[discordId] = user.username
+        } catch (e) {
+            logger.log.warn(`Could not find user with discord ID ${discordId}`)
+        }
+    }))
+}
 
 module.exports = {
     teamEmoji, getPlayerStrings, getPlayerFields, getWinnerAndLoserFields, getGatherLengthField, getGatherEndFields,
-    getMapField, getServerLinkField
+    getMapField, getServerLinkField, getDiscordIdToUsernameMap
 }
