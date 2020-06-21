@@ -4,7 +4,7 @@ const fs = require('fs');
 const mapsFolder = '/home/norbert/ttw/gatherserver/maps/';
 
 module.exports = {
-    aliases: ["ttwmaps"],
+    aliases: ["ttwmaps", "ttwmaplist"],
     description: "See the current maplist",
     execute(client, message, args) {
 		const mapsList = fs.readdirSync(mapsFolder).join(", ");
