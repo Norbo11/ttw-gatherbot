@@ -1,3 +1,4 @@
+const discord = require("../utils/discord")
 
 module.exports = {
     aliases: ["spec"],
@@ -17,7 +18,7 @@ module.exports = {
             embed: {
                 title: "Join as Spectator",
                 color: 0xff0000,
-                fields: [currentGather.getServerLinkField(currentGather.password)]
+                fields: [discord.getServerLinkField(currentGather.password)]
             }
         })
     },

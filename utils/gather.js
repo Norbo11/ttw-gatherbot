@@ -105,7 +105,6 @@ getClassById = (id) => {
     return TTW_CLASSES[key]
 }
 
-
 class Gather {
 
     currentSize = 6
@@ -114,7 +113,7 @@ class Gather {
     bravoTeam = []
     inGameState = IN_GAME_STATES["NO_GATHER"]
     numberOfBunkers = 0
-    serverPassword = undefined
+    password = undefined
     events = []
     startTime = undefined
     endTime = undefined
@@ -133,20 +132,6 @@ class Gather {
         this.statsDb = statsDb
         this.hwidToDiscordId = hwidToDiscordId
         this.getCurrentTimestamp = getCurrentTimestamp
-    }
-
-    getMapField(mapName) {
-        return {
-            name: "Map",
-            value: `${mapName}`,
-        }
-    }
-
-    getServerLinkField(password = "goaway") {
-        return {
-            name: "Link",
-            value: `soldat://${process.env.SERVER_IP}:${process.env.SERVER_PORT}/${password}`,
-        }
     }
 
     gatherInProgress() {
@@ -172,7 +157,7 @@ class Gather {
                         name: "Current Queue",
                         value: `${queueMembers.join(" - ")}`
                     },
-                    this.getMapField(serverInfo["mapName"])
+                    discord.getMapField(serverInfo["mapName"])
                 ]
             }
         })
@@ -184,14 +169,13 @@ class Gather {
         const alphaPlayers = _.slice(shuffledQueue, 0, this.currentSize / 2)
         const bravoPlayers = _.slice(shuffledQueue, this.currentSize / 2, this.currentSize)
 
-        const password = random.getRandomString()
+        this.password = random.getRandomString()
 
         this.alphaTeam = alphaPlayers
         this.bravoTeam = bravoPlayers
         this.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
         this.soldatClient.setServerPassword(password, () => {
-            this.serverPassword = password
 
             this.soldatClient.getServerInfo(serverInfo => {
                 shuffledQueue.forEach(user => {
@@ -200,9 +184,9 @@ class Gather {
                             title: "Gather Started",
                             color: 0xff0000,
                             fields: [
-                                this.getServerLinkField(password),
+                                discord.getServerLinkField(this.password),
                                 ...discord.getPlayerFields(this.alphaTeam.map(user => user.id), this.bravoTeam.map(user => user.id)),
-                                this.getMapField(serverInfo["mapName"])
+                                discord.getMapField(serverInfo["mapName"])
                             ]
                         }
                     })
@@ -214,7 +198,7 @@ class Gather {
                         color: 0xff0000,
                         fields: [
                             ...discord.getPlayerFields(),
-                            this.getMapField(serverInfo["mapName"])
+                            discord.getMapField(serverInfo["mapName"])
                         ]
                     }
                 })
@@ -230,24 +214,12 @@ class Gather {
 
         this.endTime = this.getCurrentTimestamp()
 
-        const {alphaPlayersString, bravoPlayersString} = discord.getPlayerStrings(
-            this.alphaTeam.map(user => user.id),
-            this.bravoTeam.map(user => user.id),
-            " - "
-        )
+        const alphaDiscordIds = this.alphaTeam.map(user => user.id)
+        const bravoDiscordIds = this.bravoTeam.map(user => user.id)
 
-        const winningTeam = alphaTickets > bravoTickets ? "Alpha" : "Bravo"
-        const losingTeam = alphaTickets > bravoTickets ? "Bravo" : "Alpha"
-        const winnerTickets = alphaTickets > bravoTickets ? alphaTickets : bravoTickets
-        const loserTickets = alphaTickets > bravoTickets ? bravoTickets : alphaTickets
-        const winnerCaps = alphaTickets > bravoTickets ? alphaCaps : bravoCaps
-        const loserCaps = alphaTickets > bravoTickets ? bravoCaps : alphaCaps
-        const winningPlayersString = alphaTickets > bravoTickets ? alphaPlayersString : bravoPlayersString
-        const losingPlayersString = alphaTickets > bravoTickets ? bravoPlayersString : alphaPlayersString
-
-        this.statsDb.insertGame({
-            alphaPlayers: this.alphaTeam.map(user => user.id),
-            bravoPlayers: this.bravoTeam.map(user => user.id),
+        const game = {
+            alphaPlayers: alphaDiscordIds,
+            bravoPlayers: bravoDiscordIds,
             alphaTickets: alphaTickets,
             bravoTickets: bravoTickets,
             startTime: this.startTime,
@@ -256,12 +228,14 @@ class Gather {
             numberOfBunkers: this.numberOfBunkers,
             mapName: this.currentMap,
             size: this.currentSize,
-        }).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
+        }
+
+        this.statsDb.insertGame(game).then().catch(e => logger.log.error(`Error when saving game to DB: ${e}`))
 
         this.inGameState = IN_GAME_STATES.NO_GATHER
         this.currentQueue = []
         this.playerNameToCurrentClassId = {}
-        this.serverPassword = ""
+        this.password = ""
 
         this.soldatClient.changeMap(MAPS_LIST[random.getRandomInt(0, MAPS_LIST.length)])
         this.soldatClient.setServerPassword("")
@@ -270,16 +244,7 @@ class Gather {
             embed: {
                 title: "Gather Finished",
                 color: 0xff0000,
-                fields: [
-                    {
-                        name: `**Winning Team (${winnerTickets} tickets left) (${winnerCaps} caps)**`,
-                        value: `${discord.teamEmoji(winningTeam)}: ${winningPlayersString}`,
-                    },
-                    {
-                        name: `Losing Team (${loserTickets} tickets left) (${loserCaps} caps)`,
-                        value: `${discord.teamEmoji(losingTeam)}: ${losingPlayersString}`,
-                    },
-                ]
+                fields: discord.getGatherEndFields(game),
             }
         })
     }
@@ -400,7 +365,7 @@ class Gather {
             this.playerInGameAuth(playerName, authCode)
         }
     }
-    
+
     playerAdd(discordUser) {
         if (!this.currentQueue.includes(discordUser)) {
             this.currentQueue.push(discordUser)

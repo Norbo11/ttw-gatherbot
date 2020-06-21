@@ -1,4 +1,5 @@
 const logger = require("../utils/logger")
+const discord = require("../utils/discord")
 
 module.exports = {
     aliases: ["server"],
@@ -8,7 +9,7 @@ module.exports = {
             embed: {
                 title: "Server Info",
                 color: 0xff0000,
-                fields: [currentGather.getServerLinkField()]
+                fields: [discord.getServerLinkField()]
             },
         }).catch((e) => console.error(e.response.body))
     },
