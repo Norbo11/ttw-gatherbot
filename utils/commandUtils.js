@@ -94,7 +94,7 @@ displayServerInfo = (message) => {
 
 displayQueueWithServerInfo = (message) => {
     currentSoldatClient.getServerInfo(serverInfo => {
-        currentGather.displayQueue(serverInfo)
+        currentGather.displayQueue(currentGather.currentSize, currentGather.currentQueue, serverInfo["mapName"])
     })
 }
 

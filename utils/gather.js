@@ -13,6 +13,7 @@ class Gather {
 
     currentSize = 6
     currentQueue = []
+    rematchQueue = []
     alphaTeam = []
     bravoTeam = []
     inGameState = IN_GAME_STATES["NO_GATHER"]
@@ -46,9 +47,9 @@ class Gather {
         return this.inGameState === IN_GAME_STATES.GATHER_STARTED
     }
 
-    displayQueue(serverInfo) {
-        const queueMembers = this.currentQueue.map(user => `<@${user.id}>`)
-        for (let i = 0; i < this.currentSize - this.currentQueue.length; i++) {
+    displayQueue(size, queue, mapName, rematch = false) {
+        const queueMembers = queue.map(user => `<@${user.id}>`)
+        for (let i = 0; i < size - queue.length; i++) {
             queueMembers.push(":bust_in_silhouette:")
         }
 
@@ -58,25 +59,29 @@ class Gather {
                 color: 0xff0000,
                 fields: [
                     {
-                        name: "Current Queue",
+                        name: "Current Queue" + (rematch ? " (rematch)" : ""),
                         value: `${queueMembers.join(" - ")}`
                     },
-                    discord.getMapField(serverInfo["mapName"])
+                    discord.getMapField(mapName),
                 ]
             }
         })
     }
 
-    startGame() {
+    startNewGame() {
         const shuffledQueue = _.shuffle(this.currentQueue)
 
-        const alphaPlayers = _.slice(shuffledQueue, 0, this.currentSize / 2)
-        const bravoPlayers = _.slice(shuffledQueue, this.currentSize / 2, this.currentSize)
+        const alphaDiscordUsers = _.slice(shuffledQueue, 0, this.currentSize / 2)
+        const bravoDiscordUsers = _.slice(shuffledQueue, this.currentSize / 2, this.currentSize)
 
+        this.startGame(alphaDiscordUsers, bravoDiscordUsers)
+    }
+
+    startGame(alphaDiscordUsers, bravoDiscordUsers) {
         this.password = random.getRandomString()
 
-        this.alphaTeam = alphaPlayers
-        this.bravoTeam = bravoPlayers
+        this.alphaTeam = alphaDiscordUsers
+        this.bravoTeam = bravoDiscordUsers
         this.inGameState = IN_GAME_STATES["GATHER_PRE_RESET"]
 
         const alphaDiscordIds = this.alphaTeam.map(user => user.id)
@@ -85,7 +90,7 @@ class Gather {
         this.soldatClient.setServerPassword(this.password, () => {
 
             this.soldatClient.getServerInfo(serverInfo => {
-                shuffledQueue.forEach(user => {
+                [...alphaDiscordUsers, ...bravoDiscordUsers].forEach(user => {
                     user.send({
                         embed: {
                             title: "Gather Started",
@@ -141,6 +146,7 @@ class Gather {
 
         this.inGameState = IN_GAME_STATES.NO_GATHER
         this.currentQueue = []
+        this.rematchQueue = []
         this.playerNameToCurrentClassId = {}
         this.password = ""
 
@@ -278,13 +284,39 @@ class Gather {
             this.currentQueue.push(discordUser)
 
             if (this.currentQueue.length === this.currentSize) {
-                this.startGame()
+                this.startNewGame()
             } else {
                 this.soldatClient.getServerInfo(serverInfo => {
-                    this.displayQueue(serverInfo)
+                    this.displayQueue(this.currentSize, this.currentQueue, serverInfo["mapName"])
                 })
             }
         }
+    }
+
+    playerRematchAdd(discordUser) {
+        this.statsDb.getLastGame().then(lastGame => {
+            if (![...lastGame.alphaPlayers, ...lastGame.bravoPlayers].includes(discordUser.id)) {
+                discordUser.reply("you did not play in the last gather.")
+                return
+            }
+
+            if (!this.rematchQueue.includes(discordUser)) {
+                this.rematchQueue.push(discordUser)
+
+                if (this.rematchQueue.length === lastGame.size) {
+                    const alphaDiscordUsers = _.filter(this.rematchQueue, user => lastGame.alphaPlayers.includes(user.id))
+                    const bravoDiscordUsers = _.filter(this.rematchQueue, user => lastGame.bravoPlayers.includes(user.id))
+
+                    this.soldatClient.changeMap(lastGame.mapName, () => {
+                        this.startGame(alphaDiscordUsers, bravoDiscordUsers)
+                    })
+                } else {
+                    this.displayQueue(lastGame.size, this.rematchQueue, lastGame.mapName, true)
+                }
+            } else {
+                this.displayQueue(lastGame.size, this.rematchQueue, lastGame.mapName, true)
+            }
+        })
     }
 
     playerClassSwitch(playerName, classId) {

@@ -94,7 +94,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         expect(currentGather.inGameState).equal(IN_GAME_STATES["GATHER_PRE_RESET"])
 
         netClient.emit("data", "--- gatherstart ttw_test 5")
@@ -109,7 +109,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         fourPlayersJoin(currentGather, netClient);
 
         currentGather.gatherStart()
@@ -141,7 +141,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "Norbo11 scores for Alpha Team")
@@ -169,7 +169,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "--- gatherpause")
@@ -193,7 +193,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", `<New TTW> SethGecko assigned to task ${TTW_CLASSES.GENERAL.id}`)
@@ -223,7 +223,7 @@ describe('Gather', () => {
         currentGather.currentSize = 4
         currentGather.currentQueue = ["a", "b", "c", "d"]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         currentGather.gatherStart('ttw_Test', 4, 5)
 
         netClient.emit("data", "(2) [WP] NamelessWolf killed (1) SethGecko with Ak-74")
@@ -244,7 +244,7 @@ describe('Gather', () => {
         currentGather.alphaTeam = [{id: "1"}, {id: "2"}]
         currentGather.bravoTeam = [{id: "3"}, {id: "4"}]
 
-        currentGather.startGame()
+        currentGather.startNewGame()
         fourPlayersJoin(currentGather, netClient);
         netClient.emit("data", `<New TTW> a assigned to task ${TTW_CLASSES.GENERAL.id}`)
         currentGather.gatherStart('ttw_Test', 4, 5)
