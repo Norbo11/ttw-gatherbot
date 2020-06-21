@@ -1,3 +1,4 @@
+require("dotenv").config()
 const fs = require("fs")
 const moment = require("moment")
 const util = require("util")
@@ -11,6 +12,20 @@ const soldat = require("../utils/soldat")
 const logger = require("../utils/logger")
 const soldatEvents = require("../utils/soldatEvents")
 const db = require("../utils/db")
+
+function getDiscordUser(hwidToDiscordId, playerNameToHwid, name) {
+    if (!(name in playerNameToHwid)) {
+        throw new Error(`${name} not found in playerNameToHwid map`)
+    }
+
+    const hwid = playerNameToHwid[name]
+
+    if (!(hwid in hwidToDiscordId)) {
+        throw new Error(`${name} not found in hwidToDiscordId map`)
+    }
+
+    return {id: hwidToDiscordId[hwid]}
+}
 
 const backloadGames = async () => {
     const dbConn = await db.getDbConnection()
@@ -36,7 +51,36 @@ const backloadGames = async () => {
     let currentTimestamp = 0
 
     // Take this from hwidToDiscordId.json which shouldn't be committed
-    const hwidToDiscordId = {}
+    const hwidToDiscordId = {
+        '3FB9882DB49': "531450590505730049", // '[WP] NamelessWolf',
+        '7150942A522': "672507205295276043", // 'Janusz Korwin-Mikke',
+        '7E70F684F34': "122766322739314688", // 'Norbo11',
+        '1C4A7D823EF': "695187087145566238", // 'oy',
+        '1412F48F843': "449626154320789524", // 'Universal Soldier',
+        '382B16F8746': "449626154320789524", // 'Universal Soldier',
+        '7855C05A03C': "432994416710516758", // 'pavliko',
+        // '4FE6652D1B2': "705422144787578980", // 'Formax',
+        '4FE6652D1B2': "721704244172029952", // 'Formax',
+        '19DB190DE95': "203907267924328448", // 'hs|McWise',
+        '2EC8430D647': "124290386452545537", // 'Deide',
+        '731C872E6BC': "449626154320789524", // 'Universal Soldier',
+        '1C30F5F39F3': "71993252328247296",  // '_North',
+        '68EAF77CA53': "428568369655054359", // 'Isojoenrannan hurja',
+        '50EFFC48B92': "302151016600567808", // 'SethGecko',
+        '451934B9692': "456828341555560458", // '[WP]-//power\\\\-',
+        '2131DC7CC8C': "432994416710516758", // 'pavliko',
+        '5A19489A1FD': "229683777935376384", // 'Lets_Twist',
+        '7666259E411': "432994416710516758", // 'pavliko'
+        '152A53F5036': "292100010882105346", // 'Mojo'
+        "1DD9AF92030": "432994416710516758", // 'pavliko'
+        "448A6CCBB03": "302151016600567808",
+        "13A578A4C34": "302411535911747594",
+        "1507AC6C6AA": "355427527121960961",
+        "310DC7F8CB7": "366657110206971906",
+        "4B1CC341852": "449626154320789524",
+        "64962BF5AA3": "500660222797414400",
+        "6D633BBD9FF": "500660222797414400",
+    }
 
     const soldatClient = new soldat.SoldatClient(netClient)
     const currentGather = new gather.Gather(soldatClient, discordChannel, statsDb, hwidToDiscordId, () => currentTimestamp)
@@ -49,6 +93,7 @@ const backloadGames = async () => {
     const logLinePattern = /^(?<timestamp>\d\d-\d\d-\d\d \d\d:\d\d:\d\d) (?<message>.*?)$/gm
     const playerJoinPattern = /(?<playerName>.*?) has joined (?<teamName>.*?) team/
     const playerLeavePattern = /(?<playerName>.*?) has left (?<teamName>.*?) team/
+    const playerKickPattern = /(?<playerName>.*?) has been kicked/
     const playerJoinSpectatorsPattern = /(?<playerName>.*?) has joined spectators/
     const gatherStartPattern = /--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/
     const joiningGamePattern = /(?<playerName>.*) joining game .*? HWID:(?<hwid>.*)/
@@ -113,6 +158,12 @@ const backloadGames = async () => {
                 _.remove(playersPerTeam["alpha"], elem => elem === playerLeaveMatch.groups["playerName"])
             }
 
+            const playerKickedMatch = message.match(playerKickPattern)
+            if (playerKickedMatch !== null) {
+                _.remove(playersPerTeam["bravo"], elem => elem === playerKickedMatch.groups["playerName"])
+                _.remove(playersPerTeam["alpha"], elem => elem === playerKickedMatch.groups["playerName"])
+            }
+
             const playerJoinedSpectatorsMatch = message.match(playerJoinSpectatorsPattern)
             if (playerJoinedSpectatorsMatch !== null) {
                 _.remove(playersPerTeam["bravo"], elem => elem === playerJoinedSpectatorsMatch.groups["playerName"])
@@ -123,16 +174,16 @@ const backloadGames = async () => {
             if (gatherStartMatch !== null) {
                 currentGather.currentSize = playersPerTeam["alpha"].length * 2
                 currentGather.currentQueue = [...playersPerTeam["alpha"], ...playersPerTeam["bravo"]].map(name => {
-                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
+                    return getDiscordUser(hwidToDiscordId, playerNameToHwid, name);
                 })
 
                 currentGather.inGameState = gather.IN_GAME_STATES["GATHER_PRE_RESET"]
 
                 currentGather.alphaTeam = [...playersPerTeam["alpha"]].map(name => {
-                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
+                    return getDiscordUser(hwidToDiscordId, playerNameToHwid, name);
                 })
                 currentGather.bravoTeam = [...playersPerTeam["bravo"]].map(name => {
-                    return {id: hwidToDiscordId[playerNameToHwid[name]]}
+                    return getDiscordUser(hwidToDiscordId, playerNameToHwid, name);
                 })
                 currentGather.playerNameToHwid = playerNameToHwid
             }
