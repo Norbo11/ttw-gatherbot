@@ -94,8 +94,8 @@ getServerLinkField = (password = "") => {
 
 getPlayerFieldsWithKillsAndDeaths = (discordIds, playerKillsAndDeaths) => {
     return discordIds.map(discordId => {
-        const kills = playerKillsAndDeaths[discordId].kills
-        const deaths = playerKillsAndDeaths[discordId].deaths
+        const kills = (playerKillsAndDeaths[discordId] || {kills: "N/A"}).kills
+        const deaths = (playerKillsAndDeaths[discordId] || {deaths: "N/A"}).deaths
 
         return `<@${discordId}>: ${kills}/${deaths}`
     })
