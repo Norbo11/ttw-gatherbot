@@ -1,8 +1,6 @@
 const logger = require("./logger")
-const gather = require("../utils/gather")
-
-
 const constants = require("../utils/constants")
+const discord = require("../utils/discord")
 
 
 displayGatherStatus = (message) => {
@@ -20,12 +18,18 @@ displayGatherStatus = (message) => {
                     `:regional_indicator_b: **Bravo** - Tickets: ${bravoTickets} - Caps: ${bravoCaps}`
             }
 
+            const alphaDiscordIds = currentGather.alphaTeam.map(user => user.id)
+            const bravoDiscordIds = currentGather.bravoTeam.map(user => user.id)
+
             message.channel.send({
                 embed: {
                     color: 0xff0000,
                     title: "Gather Info",
                     description: description,
-                    fields: [...currentGather.getPlayerFields(), currentGather.getMapField(serverInfo["mapName"])]
+                    fields: [
+                        ...discord.getPlayerFields(alphaDiscordIds, bravoDiscordIds),
+                        discord.getMapField(serverInfo["mapName"])
+                    ]
                 }
             });
         })
