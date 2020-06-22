@@ -167,6 +167,7 @@ class Gather {
         this.inGameState = IN_GAME_STATES["GATHER_STARTED"]
         this.numberOfBunkers = numberOfBunkers
         this.currentMap = mapName
+        this.currentSize = size
 
         // This clearing of events needs to happen on gather start rather than gather end, because sometimes
         // there are multiple resets before the gather ends, and those events should be cleared.
