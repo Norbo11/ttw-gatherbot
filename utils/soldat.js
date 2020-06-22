@@ -252,11 +252,9 @@ class SoldatClient {
         this.client.write(`/map ${mapName}\n`);
     }
 
-    changeGatherSize(gather, newSize, callback) {
+    changeGatherSize(newSize, callback) {
         this.listenForServerResponse(text => {
             if (text.match(/Initializing bunkers/)) {
-                gather.currentSize = newSize
-                gather.currentQueue = []
                 return true;
             }
             return false;

@@ -309,8 +309,14 @@ class Gather {
                     const alphaDiscordUsers = _.filter(this.rematchQueue, user => lastGame.bravoPlayers.includes(user.id))
                     const bravoDiscordUsers = _.filter(this.rematchQueue, user => lastGame.alphaPlayers.includes(user.id))
 
+                    this.discordChannel.send("Setting up server for rematch, hang on...")
+
                     this.soldatClient.changeMap(lastGame.mapName, () => {
-                        this.startGame(alphaDiscordUsers, bravoDiscordUsers)
+                        this.soldatClient.changeGatherSize(lastGame.size, () => {
+                            this.currentSize = lastGame.size
+
+                            this.startGame(alphaDiscordUsers, bravoDiscordUsers)
+                        })
                     })
                 } else {
                     this.displayQueue(lastGame.size, this.rematchQueue, lastGame.mapName, true)

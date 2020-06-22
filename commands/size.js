@@ -29,7 +29,9 @@ module.exports = {
 
         message.channel.send("Changing size, hang on...")
 
-        currentSoldatClient.changeGatherSize(currentGather, newSize, () => {
+        currentSoldatClient.changeGatherSize(newSize, () => {
+            currentGather.currentSize = newSize
+            currentGather.currentQueue = []
             utils.displayQueueWithServerInfo(message)
         })
     },
