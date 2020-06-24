@@ -103,6 +103,17 @@ getKillsAndDeathsPerWeapon = (discordId, events) => {
     return weaponStats
 }
 
+getTeamKills = (discordId, events) => {
+
+    const teamKillEvents = _.filter(events, event =>
+        event.type === TTW_EVENTS.PLAYER_KILL
+        && event.killerDiscordId !== event.victimDiscordId // Do not count selfkills as team kills
+        && event.killerTeam === event.victimTeam
+    )
+
+    return teamKillEvents.length
+}
+
 getPlayerStats = async (statsDb, discordId) => {
     const games = await statsDb.getGamesWithPlayer(discordId)
 
@@ -110,6 +121,7 @@ getPlayerStats = async (statsDb, discordId) => {
     let wonGames = 0
     let lostGames = 0
     let totalKills = 0
+    let totalTeamKills = 0
     let totalDeaths = 0
     let totalGatherTime = 0
     let totalCaps = 0
@@ -155,6 +167,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
         totalCaps += getCaps(discordId, game.events)
         totalConquers += getNumberOfTimesConquered(discordId, game.events)
+        totalTeamKills += getTeamKills(discordId, game.events)
 
         const timePlayedPerClass = getTimePlayedPerClass(game.startTime, game.endTime, discordId, game.events)
         const killsAndDeathsPerWeapon = getKillsAndDeathsPerWeapon(discordId, game.events)
@@ -179,7 +192,7 @@ getPlayerStats = async (statsDb, discordId) => {
 
     return {
         totalGames, wonGames, lostGames, classStats, weaponStats, totalKills, totalDeaths, totalGatherTime, totalCaps,
-        totalConquers, sizeStats, firstGameTimestamp, lastGameTimestamp
+        totalConquers, sizeStats, firstGameTimestamp, lastGameTimestamp, totalTeamKills
     }
 }
 
@@ -229,6 +242,9 @@ const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
     let topPlayersByKda = _.sortBy(playersWithEnoughGames, player => -(player.playerStats.totalKills / player.playerStats.totalDeaths))
     topPlayersByKda = _.take(topPlayersByKda, 5)
 
+    let topPlayersByTeamKills = _.sortBy(playersWithEnoughGames, player => -(player.playerStats.totalTeamKills / player.playerStats.totalKills))
+    topPlayersByTeamKills = _.take(topPlayersByTeamKills, 5)
+
     let topPlayersByWeaponKills = {}
 
     Object.keys(SOLDAT_WEAPONS).forEach(weaponKey => {
@@ -241,7 +257,8 @@ const getTopPlayers = async (statsDb, minimumGamesPlayed) => {
     const allDiscordIds = allPlayerStats.map(player => player.discordId)
 
     return {
-        topPlayersByWinRate, topPlayersByTotalGames, topPlayersByKda, allDiscordIds, topPlayersByWeaponKills
+        topPlayersByWinRate, topPlayersByTotalGames, topPlayersByKda, allDiscordIds, topPlayersByWeaponKills,
+        topPlayersByTeamKills
     }
 }
 
@@ -408,20 +425,33 @@ const formatTopPlayers = (topPlayers, discordIdToUsername) => {
         return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalGames} games`
     })
 
+    const topPlayersByTeamKills = topPlayers.topPlayersByTeamKills.map(topPlayer => {
+        const playerStats = topPlayer.playerStats
+        return `**${discordIdToUsername[topPlayer.discordId]}**: ${playerStats.totalTeamKills} team kills (${(playerStats.totalTeamKills / playerStats.totalKills * 100).toFixed(1)}% of kills)`
+    })
+
     return {
         embed: {
             fields: [
                 {
-                    name: "**Top Players by Win Rate**",
-                    value: topPlayersByWinRate.length > 0 ? topPlayersByWinRate.join("\n") : "No Players"
+                    name: "**Win Rate**",
+                    value: topPlayersByWinRate.length > 0 ? topPlayersByWinRate.join("\n") : "No Players",
+                    inline: true
                 },
                 {
-                    name: "**Top Players by KDA**",
-                    value: topPlayersByKda.length > 0 ? topPlayersByKda.join("\n") : "No Players"
+                    name: "**KDA**",
+                    value: topPlayersByKda.length > 0 ? topPlayersByKda.join("\n") : "No Players",
+                    inline: true
                 },
                 {
-                    name: "**Most Addicted Players**",
-                    value: topPlayersByTotalGames.length > 0 ? topPlayersByTotalGames.join("\n") : "No Players"
+                    name: "**Total Games**",
+                    value: topPlayersByTotalGames.length > 0 ? topPlayersByTotalGames.join("\n") : "No Players",
+                    inline: true
+                },
+                {
+                    name: "**Friendly Fire**",
+                    value: topPlayersByTeamKills.length > 0 ? topPlayersByTeamKills.join("\n") : "No Players",
+                    inline: true
                 },
             ]
         }
