@@ -281,6 +281,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
         `**Bunker Conquers**: ${playerStats.totalConquers}`,
         `**First Gather**: ${moment(playerStats.firstGameTimestamp).format("DD-MM-YYYY")}`,
         `**Last Gather**: ${moment(playerStats.lastGameTimestamp).from(moment())}`,
+        `**Friendly Fire**: ${playerStats.totalTeamKills} team kills (${(playerStats.totalTeamKills / playerStats.totalKills * 100).toFixed(1)}% of kills)`,
     ]
 
     let favouriteWeapons = Object.keys(playerStats.weaponStats).map(weaponId => {

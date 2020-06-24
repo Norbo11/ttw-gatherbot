@@ -346,7 +346,8 @@ describe('Stats Formatter', () => {
                             "**Caps**: 2 (0.67 per game)\n" +
                             "**Bunker Conquers**: 10\n" +
                             `**First Gather**: ${moment().format("DD-MM-YYYY")}\n` +
-                            "**Last Gather**: a few seconds ago",
+                            "**Last Gather**: a few seconds ago\n" +
+                            "**Friendly Fire**: undefined team kills (NaN% of kills)"
                     },
                     {
                         name: "**Favourite Weapons**",
