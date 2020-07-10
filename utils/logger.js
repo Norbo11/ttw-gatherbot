@@ -1,16 +1,29 @@
 const pino = require('pino')
-const logger = require("../utils/logger")
+const pinoms = require('pino-multi-stream');
+const pinoPretty = require('pino-pretty');
+const fs = require('fs');
 
-// Passing pino.destination() here enables synchronous logging, which is slower but doesn't lose messages prior to process.exit()
-const log = pino({
-    prettyPrint: {
-        levelFirst: true,
-        colorize: false,
+streams = [
+    {
+        stream: fs.createWriteStream("./ttw-gatherbot.log", {
+            flags: "a" // append mode
+        }),
+        level: "debug"
     },
-    prettifier: require('pino-pretty'),
-    level: "debug"
-    // level: "silent"
-}, pino.destination('./ttw-gatherbot.log'))
+    {
+        stream: pinoms.prettyStream({
+            prettyPrint: {
+                levelFirst: true,
+                colorize: true,
+            },
+            prettifier: pinoPretty
+        }),
+        level: "debug"
+    }
+]
+
+const log = pino({
+}, pinoms.multistream(streams))
 
 module.exports = {
     log
