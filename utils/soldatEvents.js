@@ -6,21 +6,25 @@ const constants = require("./constants")
 PASSIVE_EVENTS = [
     /* Events to process when the gather has already started */
     {
+        name: "flag cap",
         pattern: /(?<playerName>.*?) scores for (?<teamName>.*?) Team/,
         handler: (gather, match) => gather.flagCap(match.groups["playerName"], match.groups["teamName"]),
         condition: gather => gather.gatherHasStarted()
     },
     {
+        name: "gather pause",
         pattern: /--- gatherpause/,
         handler: (gather, match) => gather.gatherPause(),
         condition: gather => gather.gatherHasStarted()
     },
     {
+        name: "gather unpause",
         pattern: /--- gatherunpause/,
         handler: (gather, match) => gather.gatherUnpause(),
         condition: gather => gather.gatherHasStarted()
     },
     {
+        name: "kill",
         pattern: /\((?<killerTeam>.*?)\) (?<killerName>.*?) killed \((?<victimTeam>.*?)\) (?<victimName>.*?) with (?<weapon>.*)/,
         handler: (gather, match) =>
             gather.playerKill(
@@ -33,6 +37,7 @@ PASSIVE_EVENTS = [
         condition: gather => gather.gatherHasStarted()
     },
     {
+        name: "conquer",
         pattern: /--- conquer (?<conqueringTeam>.*?) (?<alphaTickets>.*?) (?<bravoTickets>.*?) (?<currentAlphaBunker>.*?) (?<currentBravoBunker>.*?) (?<sabotaging>.*)/,
         handler: (gather, match) =>
             gather.conquer(
@@ -46,21 +51,25 @@ PASSIVE_EVENTS = [
     },
     /* Events to process when the gather has either started or is in pre-reset mode */
     {
+        name: "player join",
         pattern: /(?<playerName>.*?) has joined (?<teamName>.*?) team/,
         handler: (gather, match) => gather.playerJoin(match.groups["playerName"]),
         condition: gather => gather.gatherInProgress()
     },
     {
+        name: "player leave",
         pattern: /(?<playerName>.*?) has left (?<teamName>.*?) team/,
         handler: (gather, match) => gather.playerLeave(match.groups["playerName"]),
         condition: gather => gather.gatherInProgress()
     },
     {
+        name: "gather start",
         pattern: /--- gatherstart (?<mapName>.*?) (?<numberOfBunkers>\d*)/,
         handler: (gather, match) => gather.gatherStart(match.groups["mapName"], gather.currentSize, parseInt(match.groups["numberOfBunkers"])),
         condition: gather => gather.gatherInProgress()
     },
     {
+        name: "gather end",
         pattern: /--- gatherend (?<alphaTickets>\d*?) (?<bravoTickets>\d*?) (?<alphaCaps>\d*?) (?<bravoCaps>\d*)/,
         handler: (gather, match) => gather.endGame(
             parseInt(match.groups["alphaTickets"]),
@@ -72,16 +81,19 @@ PASSIVE_EVENTS = [
     },
     /* Events to process at any time */
     {
+        name: "player command",
         pattern: /\[CMD\] (?<currentClass>.*?) \((?<playerName>.*?)\): \/(?<command>.*)/,
         handler: (gather, match) => gather.playerCommand(match.groups["playerName"], match.groups["currentClass"], match.groups["command"]),
         condition: gather => true
     },
     {
+        name: "player say",
         pattern: /\[(?<playerName>.*?)] !say (?<message>.*)/,
         handler: (gather, match) => gather.playerSay(match.groups["playerName"], match.groups["message"]),
         condition: gather => true
     },
     {
+        name: "class switch",
         pattern: /<New TTW> (?<playerName>.*?) assigned to task (?<classId>.*)/,
         handler: (gather, match) => gather.playerClassSwitch(match.groups["playerName"], match.groups["classId"]),
         condition: gather => true
@@ -100,9 +112,9 @@ registerSoldatEventListeners = (gather, netClient) => {
                 try {
                     eventSpec.handler(gather, match)
                 } catch (e) {
-                    logger.log.error(`There was an error processing passive events from the server: ${e.stack}`)
+                    logger.log.error(`There was an error processing a ${eventSpec.name} event from the server: ${e.stack}`)
                 }
-                logger.log.info(`Received passive event from server: ${text}`)
+                logger.log.info(`Received ${eventSpec.name} event from server: ${text}`)
             }
         })
     });

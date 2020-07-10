@@ -286,6 +286,7 @@ class SoldatClient {
         // Once you get authenticated with Steam you HWID changes to some steam identifier
         // Good to know this for the future in case we need it
 
+        logger.log.debug(`Setting HWID listener for '${playerName}'`)
         this.listenForServerResponse(text => {
             const match = text.match(/--- hwid (?<hwid>.*?) (?<playerName>.*)/)
             if (match !== null && match.groups["playerName"] === playerName) {
@@ -293,6 +294,7 @@ class SoldatClient {
             }
             return false;
         }, callback)
+        logger.log.debug(`Done setting HWID listener for '${playerName}'`)
     }
 
     messagePlayer(playerName, message) {

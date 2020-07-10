@@ -363,7 +363,7 @@ class Gather {
 
     playerJoin(playerName) {
         this.soldatClient.getPlayerHwid(playerName, hwid => {
-            logger.log.info(`${playerName} joined with HWID ${hwid}`)
+            logger.log.info(`'${playerName}' joined with HWID '${hwid}'`)
 
             this.playerNameToHwid[playerName] = hwid
 
