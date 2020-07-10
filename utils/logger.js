@@ -8,7 +8,7 @@ const log = pino({
         colorize: false,
     },
     prettifier: require('pino-pretty'),
-    level: "info"
+    level: "debug"
     // level: "silent"
 }, pino.destination('./ttw-gatherbot.log'))
 
