@@ -235,25 +235,10 @@ class Gather {
 
     gatherPause() {
         this.pushEvent(TTW_EVENTS.GATHER_PAUSE)
-
-        this.discordChannel.send({
-            embed: {
-                title: `Gather Paused`,
-                color: 0xff0000,
-            }
-        })
     }
 
     gatherUnpause() {
         this.pushEvent(TTW_EVENTS.GATHER_UNPAUSE)
-
-        this.discordChannel.send({
-            embed: {
-                title: `Gather Unpaused`,
-                color: 0xff0000,
-                description: "GO GO GO"
-            }
-        })
     }
 
     pushEvent(eventType, eventBody = {}) {
