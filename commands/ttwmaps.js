@@ -16,7 +16,7 @@ module.exports = {
 				return 0;
 			}
 		} 
-		).join(", ");
+		).map(mapLink => '[' + mapLink + ']' + '(https://www.soldat-ttw.com/maps/#ttw/' + mapLink + ')').join(", ");
 		message.channel.send({embed: {
 			color: 3447003,
 			title: "TTW Maps (download mappack)",
