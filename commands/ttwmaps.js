@@ -19,7 +19,7 @@ module.exports = {
 		).join(", ");
 		message.channel.send({embed: {
 			color: 3447003,
-			title: "TTW Maps",
+			title: "TTW Maps (download mappack)",
 			url: "https://soldat-ttw.com/ttw_mappack.zip",
 			description: (mapsList)
 		}});
