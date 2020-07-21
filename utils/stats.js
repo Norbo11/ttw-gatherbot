@@ -152,15 +152,19 @@ getPlayerStats = async (statsDb, discordId) => {
         if (!(game.size in sizeStats)) {
             sizeStats[game.size] = {
                 totalGames: 0,
-                totalTicketsLeftInWonGames: 0
+                totalTicketsLeftInWonGames: 0,
+                wonGames: 0,
+                lostGames: 0
             }
         }
 
         if (winningTeam === playerTeam) {
             wonGames += 1
+            sizeStats[game.size].wonGames += 1
             sizeStats[game.size].totalTicketsLeftInWonGames += game[winningTeam.toLowerCase() + "Tickets"]
         } else {
             lostGames += 1
+            sizeStats[game.size].lostGames += 1
         }
 
         sizeStats[game.size].totalGames += 1
@@ -305,7 +309,7 @@ const formatGeneralStatsForPlayer = (playerName, playerStats) => {
     })
     averageTickets = _.sortBy(averageTickets, sizeStat => -sizeStat.size)
     averageTickets = _.take(averageTickets, 5)
-    averageTickets = averageTickets.map(sizeStat => `**Size ${sizeStat.size}**: ${Math.round(sizeStat.totalTicketsLeftInWonGames / sizeStat.totalGames)} tickets`)
+    averageTickets = averageTickets.map(sizeStat => `**Size ${sizeStat.size}**: ${sizeStat.wonGames > 0 ? `${Math.round(sizeStat.totalTicketsLeftInWonGames / sizeStat.wonGames)} tickets` : "no wins yet"}`)
 
     return {
         embed: {
@@ -373,9 +377,9 @@ const getTeamCaps = (events, teamName) => {
 
     events.forEach(event => {
         if (event.type === TTW_EVENTS.FLAG_CAP) {
-           if (event.teamName === teamName) {
-               caps += 1
-           }
+            if (event.teamName === teamName) {
+                caps += 1
+            }
         }
     })
 
