@@ -17,7 +17,7 @@ module.exports = {
                 message.channel.send({
                     embed: {
                         color: 0xff0000,
-                        description: `Map changed to: **${args}**`,
+                        description: `Map changed to: **[${args}](https://soldat-ttw.com/maps/#ttw/${args})**`,
                     }
                 });
             } else {

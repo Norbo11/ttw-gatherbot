@@ -14,15 +14,18 @@
     "main": "index.js",
     "dependencies": {
         "binary-parser": "1.6.2",
-        "discord.js": "11.0.0",
-        "dotenv": "8.2.0",
-        "lodash": "4.17.15",
+        "cjs": "0.0.11",
+        "discord": "^0.8.2",
+        "discord.js": "^11.0.0",
+        "dotenv": "^8.2.0",
+        "lodash": "^4.17.19",
+        "moment": "2.26.0",
         "mongodb": "3.5.7",
-        "npm": "^6.14.5",
+        "npm": "^6.14.7",
         "pino": "6.2.1",
-        "pino-pretty": "4.0.0",
         "pino-multi-stream": "5.0.0",
-        "moment": "2.26.0"
+        "pino-pretty": "4.0.0",
+        "superagent": "^5.3.1"
     },
     "devDependencies": {
         "mocha": "7.2.0",
