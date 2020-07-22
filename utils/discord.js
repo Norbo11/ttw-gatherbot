@@ -49,7 +49,7 @@ getGatherLengthField = (startTime, endTime, inline = false) => {
 getMapField = (mapName, inline = false) => {
     return {
         name: "Map",
-        value: `${mapName}`,
+        value: `[${mapName}](https://soldat-ttw.com/maps/#ttw/${mapName})`,
         inline,
     }
 }
